@@ -682,15 +682,15 @@ Gostaria de ver os preços ou prefere uma demo?`
     const msg = userMessage.toLowerCase().trim();
     const pick = (options) => options[Math.floor(Math.random() * options.length)];
 
-    // 1. GENERADOR DE MENÚ
+    // 1. GENERADOR DE MENÚ (Lista bonita de productos)
     const menuList = products.length > 0 
       ? products.map(p => `• ${p.image || '🔹'} **${p.name}** ...... $${p.price}`).join('\n')
       : null;
 
-    // 2. DETECTOR DE PRODUCTOS
+    // 2. DETECTOR DE PRODUCTOS (Busca si el cliente escribió el nombre de algo que vendes)
     const productMatch = products.find(p => msg.includes(p.name.toLowerCase()));
 
-    // 3. GENERADOR DE MÉTODOS DE PAGO (Solo muestra los que tienen ✅ en Configuración)
+    // 3. GENERADOR DE MÉTODOS DE PAGO (Solo los activos en Configuración)
     const getPaymentMethods = (lang) => {
         const methods = [];
         if (paymentInfo.pixEnabled) methods.push('Pix');
@@ -700,7 +700,6 @@ Gostaria de ver os preços ou prefere uma demo?`
         if (paymentInfo.paypalEnabled) methods.push('PayPal');
         if (paymentInfo.mercadoPagoEnabled) methods.push('MercadoPago');
         
-        // Default por si no hay nada marcado
         if (methods.length === 0) return lang === 'pt' ? 'Dinheiro' : (lang === 'en' ? 'Cash' : 'Efectivo');
         return methods.join(', ');
     };
@@ -722,14 +721,12 @@ Gostaria de ver os preços ou prefere uma demo?`
           `✅ ¡Perfecto! He tomado nota.\n\n💳 **Aceptamos:** ${activeMethods}.\n\n¿Cuál prefieres para cerrar el pedido?`,
           `¡Entendido! 📝 Ya registré tu pedido.\n\nPara el pago, aceptamos: **${activeMethods}**. \n\nIndícame cuál prefieres usar.`
         ],
-        // NUEVA RESPUESTA FINAL (CONFIRMACIÓN)
         final: [
           `🎉 **¡Pedido Confirmado!** 🚀\n\nHe registrado tu pago con ese método. Un miembro de nuestro equipo se acercará o te contactará en breve para finalizar.\n\n¡Gracias por elegir **${businessInfo.name}**!`,
           `✅ **¡Listo!** Ya avisé al equipo sobre tu pago y pedido. Todo está en marcha.\n\n¡Que lo disfrutes! 😊`
         ],
         service: [`✨ En **${businessInfo.name}** somos especialistas en **${businessInfo.type}**. Ofrecemos: ${businessInfo.description}`],
         info: [`📍 Estamos ubicados en: **${businessInfo.address}**.\n⏰ Horario: **${businessInfo.hours}**.`],
-        closing: [`📝 ¡Anotado! ¿Ese sería todo tu pedido o deseas agregar algo más?`],
         delivery_question: [`📝 ¡Excelente! Para preparar tu pedido...\n\n¿Lo prefieres **para llevar** 🥡 o para **consumir aquí** 🍽️?`],
         default: [`Entiendo "${userMessage}".\n\nPero para ayudarte mejor, ¿quieres ver el **Menú**, la **Ubicación** o hacer un **Pedido**?`]
       },
@@ -748,7 +745,6 @@ Gostaria de ver os preços ou prefere uma demo?`
         ],
         service: [`✨ We specialize in **${businessInfo.type}**. We offer: ${businessInfo.description}`],
         info: [`📍 Location: **${businessInfo.address}**.\n⏰ Hours: **${businessInfo.hours}**.`],
-        closing: [`📝 Noted! Anything else you'd like to add?`],
         delivery_question: [`📝 Great! Is this **to go** 🥡 or to **eat in** 🍽️?`],
         default: [`I understand. Would you like to see the **Menu** or our **Location**?`]
       },
@@ -767,7 +763,6 @@ Gostaria de ver os preços ou prefere uma demo?`
         ],
         service: [`✨ Somos especialistas em **${businessInfo.type}**. Oferecemos: ${businessInfo.description}`],
         info: [`📍 Estamos em: **${businessInfo.address}**.\n⏰ Horário: **${businessInfo.hours}**.`],
-        closing: [`📝 Anotado! Deseja adicionar algo mais?`],
         delivery_question: [`📝 Ótimo! É **para viagem** 🥡 ou para **consumir aqui** 🍽️?`],
         default: [`Entendi. Gostaria de ver o **Menu** ou nossa **Localização**?`]
       }
@@ -775,44 +770,48 @@ Gostaria de ver os preços ou prefere uma demo?`
 
     const langParams = responses[selectedLanguage] || responses.es;
 
-    // --- LÓGICA DE CONVERSACIÓN ---
+    // --- CEREBRO DE LA CONVERSACIÓN (LÓGICA FINAL) ---
 
-    // 1. CONFIRMACIÓN FINAL DE PAGO (¡ESTO FALTABA!)
+    // A. CIERRE FINAL DE VENTA (Si dice un método de pago)
     if (msg.includes('tarjeta') || msg.includes('card') || msg.includes('pix') || msg.includes('efectivo') || 
-        msg.includes('cash') || msg.includes('dinheiro') || msg.includes('paypal') || msg.includes('transferencia')) {
+        msg.includes('cash') || msg.includes('dinheiro') || msg.includes('paypal') || msg.includes('transferencia') || msg.includes('debito') || msg.includes('débito') || msg.includes('credito') || msg.includes('crédito')) {
         return pick(langParams.final);
     }
 
-    // 2. PARA LLEVAR / COMER AQUÍ -> PIDE PAGO
+    // B. LOGÍSTICA (Si dice "para llevar" o "comer aquí") -> Pregunta PAGO
     if (msg.includes('llevar') || msg.includes('aqui') || msg.includes('aquí') || msg.includes('mesa') || 
         msg.includes('to go') || msg.includes('eat in') || msg.includes('pickup') || 
         msg.includes('viagem') || msg.includes('consumir')) {
         return pick(langParams.payment_handoff);
     }
 
-    // 3. PEDIDO / PRODUCTOS
+    // C. PEDIDO / PRODUCTOS (El paso 2 que te confundía)
+    // Aquí detectamos si dice "quiero..." o si menciona un producto (ej: "latte")
     if (msg.includes('quiero') || msg.includes('dame') || msg.includes('ordenar') || msg.includes('pedir') || 
         msg.includes('want') || msg.includes('order') || productMatch) { 
         
+        // Excepción: Si dice "quiero ver el menú", le mostramos el menú, NO preguntamos para llevar.
         if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta')) return pick(langParams.menu);
+        
+        // Si no es el menú, es un pedido -> Preguntamos "¿Para llevar?"
         return pick(langParams.delivery_question);
     }
 
-    // 4. MENÚ / PRECIOS
+    // D. SOLICITUD DE MENÚ / PRECIOS
     if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta') || msg.includes('lista') || 
         msg.includes('precio') || msg.includes('cost')) {
         return pick(langParams.menu);
     }
 
-    // 5. AFIRMACIONES / NEGACIONES
+    // E. AFIRMACIONES (Asumimos que quiere ver menú si dice "sí" al inicio)
     if (msg === 'si' || msg === 'sí' || msg.includes('claro') || msg.includes('yes')) return pick(langParams.menu);
-    if (msg.includes('no') || msg.includes('nada mas')) return pick(langParams.delivery_question);
-
-    // 6. INFO / SALUDOS
+    
+    // F. INFO GENERAL / SALUDOS
     if (msg.includes('servicio') || msg.includes('haces')) return pick(langParams.service);
     if (msg.includes('hora') || msg.includes('ubic') || msg.includes('dond')) return pick(langParams.info);
     if (msg.includes('hola') || msg.includes('buen') || msg.includes('hi')) return pick(langParams.greeting);
 
+    // G. AGRADECIMIENTOS
     if (msg.includes('gracias') || msg.includes('thank') || msg.includes('obrigad')) {
         return selectedLanguage === 'es' ? "¡De nada! 🤖" : "You're welcome! 🤖";
     }
