@@ -84,23 +84,92 @@ export default function AIBusinessAssistantPro() {
     { name: 'Brownie', price: '4.50', category: 'Postres', image: '🍫' }
   ];
 
+  // LISTA DE INDUSTRIAS PARA EL SELECTOR
+  const businessTypes = [
+    { id: 'coffee', label: '☕ Cafetería / Restaurante', value: 'Restaurante' },
+    { id: 'health', label: '🦷 Clínica Dental / Salud', value: 'Clínica de Salud' },
+    { id: 'gym', label: '💪 Gimnasio / Fitness', value: 'Centro de Fitness' },
+    { id: 'realestate', label: '🏠 Inmobiliaria', value: 'Agencia Inmobiliaria' },
+    { id: 'legal', label: '⚖️ Legal / Abogados', value: 'Estudio Jurídico' },
+    { id: 'store', label: '🛍️ Tienda / E-commerce', value: 'Tienda' },
+    { id: 'beauty', label: '💇‍♀️ Belleza / Estética', value: 'Centro de Estética' },
+    { id: 'auto', label: '🔧 Taller Mecánico', value: 'Taller Automotriz' },
+    { id: 'education', label: '🎓 Educación / Cursos', value: 'Academia' },
+    { id: 'other', label: '✨ Otro (Personalizado)', value: '' }
+  ];
+
   const loadExampleConfig = () => {
     const example = exampleConfigs[selectedLanguage];
+    
+    // 1. Carga la Info del Negocio
     setBusinessInfo(example);
+    
+    // 2. Carga los Productos de ejemplo
+    setProducts(exampleProducts); 
+
+    // 3. ACTIVA LOS PAGOS PARA LA DEMO
+    // (Aquí sí van los tres puntos antes de paymentInfo, es código real)
+    setPaymentInfo({
+      ...paymentInfo,
+      pixEnabled: true,
+      creditCardEnabled: true,
+      debitCardEnabled: true,
+      cashEnabled: true,
+      paypalEnabled: false,
+      stripeEnabled: false,
+      mercadoPagoEnabled: false
+    });
+
     setIsConfigured(true);
     setActiveTab('chat');
     
+    // Textos de bienvenida
+    const welcomeTexts = {
+      es: `👋 ¡Hola! Bienvenido a ${example.name}.
+      
+Soy tu asistente inteligente 🤖. Estoy aquí para atenderte rápido.
+
+Puedes preguntarme sobre:
+☕ **Menú y Precios**
+📍 **Ubicación y Horarios**
+📅 **Reservas**
+❓ **Servicios del local**
+
+¿Qué te gustaría consultar primero?`,
+      
+      en: `👋 Hello! Welcome to ${example.name}.
+      
+I'm your smart assistant 🤖. I'm here to help you fast.
+
+You can ask me about:
+☕ **Menu and Prices**
+📍 **Location and Hours**
+📅 **Bookings**
+❓ **Services**
+
+What would you like to check first?`,
+      
+      pt: `👋 Olá! Bem-vindo ao ${example.name}.
+      
+Sou seu assistente inteligente 🤖. Estou aqui para te atender rápido.
+
+Você pode me perguntar sobre:
+☕ **Menu e Preços**
+📍 **Localização e Horários**
+📅 **Reservas**
+❓ **Serviços**
+
+O que você gostaria de consultar primeiro?`
+    };
+
     const welcomeMsg = {
       role: 'assistant',
-      content: `${t.welcome} ${example.name} 👋
-
-${t.canHelp}`,
+      content: welcomeTexts[selectedLanguage],
       timestamp: new Date().toISOString()
     };
     
     setMessages([welcomeMsg]);
     
-    // Show notification
     setNotifMessage(t.demoLoaded);
     setShowCopyNotif(true);
     setTimeout(() => setShowCopyNotif(false), 3000);
@@ -148,10 +217,11 @@ ${t.canHelp}`,
     stripeEnabled: false,
     mercadoPagoEnabled: false,
     paypalEnabled: false,
-    applePayEnabled: false,
-    googlePayEnabled: false,
-    amazonPayEnabled: false,
-    usdtEnabled: false,
+    // NUEVOS MÉTODOS DE PAGO ESPECÍFICOS:
+    pixEnabled: false,        // 🇧🇷 Pix
+    creditCardEnabled: false, // 💳 Crédito
+    debitCardEnabled: false,  // 💳 Débito
+    cashEnabled: true,        // 💵 Efectivo (Activo por defecto)
     currency: 'USD',
     testMode: true
   });
@@ -521,19 +591,48 @@ ${t.canHelp}`,
     setIsConfigured(true);
     setActiveTab('chat');
     
+    // TEXTOS MULTI-IDIOMA PARA TU NEGOCIO (ALIA)
+    const welcomeTexts = {
+      es: `👋 ¡Hola! Bienvenido a ${businessInfo.name}.
+Soy ALIA, tu nueva "Empleada Digital" 🤖.
+
+Mi trabajo es atender a tus clientes 24/7 para que tú descanses.
+Aquí tienes lo más buscado:
+
+💰 **Ver Precio del Plan Básico**
+🚀 **Entender cómo funciono**
+💳 **Pasos para contratarme**
+
+¿Te gustaría ver los precios o prefieres una demo?`,
+
+      en: `👋 Hello! Welcome to ${businessInfo.name}.
+I'm ALIA, your new "Digital Employee" 🤖.
+
+My job is to serve your clients 24/7 so you can rest.
+Here is what's most popular:
+
+💰 **See Basic Plan Price**
+🚀 **Understand how I work**
+💳 **Steps to hire me**
+
+Would you like to see pricing or do you prefer a demo?`,
+
+      pt: `👋 Olá! Bem-vindo à ${businessInfo.name}.
+Sou a ALIA, sua nova "Funcionária Digital" 🤖.
+
+Meu trabalho é atender seus clientes 24/7 para que você descanse.
+Aqui está o mais procurado:
+
+💰 **Ver Preço do Plano Básico**
+🚀 **Entender como funciono**
+💳 **Passos para me contratar**
+
+Gostaria de ver os preços ou prefere uma demo?`
+    };
+    
     const welcomeMsg = {
       role: 'assistant',
-      content: `¡Hola! Bienvenido a ${businessInfo.name} 👋
-
-Soy tu asistente virtual. ¿En qué puedo ayudarte?
-
-${businessInfo.description}
-
-¿Hay algo más específico en lo que pueda ayudarte? Puedo informarte sobre:
-• Horarios y ubicación
-• Servicios y precios
-• Reservas y citas
-• Formas de pago`,
+      content: welcomeTexts[selectedLanguage] || welcomeTexts.es,
       timestamp: new Date().toISOString()
     };
     
@@ -580,111 +679,145 @@ ${businessInfo.description}
       return analyzeImage(uploadedImage);
     }
 
-    const msg = userMessage.toLowerCase();
+    const msg = userMessage.toLowerCase().trim();
+    const pick = (options) => options[Math.floor(Math.random() * options.length)];
+
+    // 1. GENERADOR DE MENÚ
+    const menuList = products.length > 0 
+      ? products.map(p => `• ${p.image || '🔹'} **${p.name}** ...... $${p.price}`).join('\n')
+      : null;
+
+    // 2. DETECTOR DE PRODUCTOS
+    const productMatch = products.find(p => msg.includes(p.name.toLowerCase()));
+
+    // 3. GENERADOR DE MÉTODOS DE PAGO (Solo muestra los que tienen ✅ en Configuración)
+    const getPaymentMethods = (lang) => {
+        const methods = [];
+        if (paymentInfo.pixEnabled) methods.push('Pix');
+        if (paymentInfo.creditCardEnabled) methods.push(lang === 'pt' ? 'Cartão de Crédito' : (lang === 'en' ? 'Credit Card' : 'Tarjeta de Crédito'));
+        if (paymentInfo.debitCardEnabled) methods.push(lang === 'pt' ? 'Cartão de Débito' : (lang === 'en' ? 'Debit Card' : 'Tarjeta de Débito'));
+        if (paymentInfo.cashEnabled) methods.push(lang === 'pt' ? 'Dinheiro' : (lang === 'en' ? 'Cash' : 'Efectivo'));
+        if (paymentInfo.paypalEnabled) methods.push('PayPal');
+        if (paymentInfo.mercadoPagoEnabled) methods.push('MercadoPago');
+        
+        // Default por si no hay nada marcado
+        if (methods.length === 0) return lang === 'pt' ? 'Dinheiro' : (lang === 'en' ? 'Cash' : 'Efectivo');
+        return methods.join(', ');
+    };
+
+    const activeMethods = getPaymentMethods(selectedLanguage);
+
     const responses = {
       es: {
-        hours: `⏰ Nuestro horario es: ${businessInfo.hours || 'Lunes a Viernes 9AM-6PM'}. ¿Necesitas algo más?`,
-        location: `📍 Estamos ubicados en: ${businessInfo.address || 'Consulta nuestra ubicación en Google Maps'}. ¡Te esperamos!`,
-        phone: `📞 Contáctanos al: ${businessInfo.phone || '+1 (555) 123-4567'}. También estoy aquí para ayudarte por chat.`,
-        price: `💰 Los precios varían según el servicio. ${businessInfo.description} ¿Qué servicio te interesa en particular?`,
-        booking: `📅 ¡Claro! Puedo ayudarte a agendar. ¿Qué día y hora prefieres? También puedes llamarnos directamente al ${businessInfo.phone || 'teléfono'}.`,
-        service: `✨ En ${businessInfo.name} ofrecemos: ${businessInfo.description}. ¿Hay algo específico que quieras saber?`,
-        payment: `💳 Aceptamos múltiples formas de pago: tarjeta de crédito/débito, efectivo y transferencias. ¿Cómo prefieres pagar?`,
-        hello: `👋 ¡Hola! Bienvenido a ${businessInfo.name}.
-
-Soy tu asistente virtual. ¿En qué puedo ayudarte?
-
-${businessInfo.description}
-
-¿Hay algo más específico en lo que pueda ayudarte? Puedo informarte sobre:
-• Horarios y ubicación
-• Servicios y precios
-• Reservas y citas
-• Formas de pago`,
-        thanks: `😊 ¡Con mucho gusto! Si necesitas algo más, aquí estaré. ¡Que tengas un excelente día!`,
-        default: `Entiendo tu consulta sobre "${userMessage}". 
-
-En ${businessInfo.name}, ${businessInfo.description}
-
-¿Hay algo más específico en lo que pueda ayudarte? Puedo informarte sobre:
-• Horarios y ubicación
-• Servicios y precios  
-• Reservas y citas
-• Formas de pago`
+        greeting: [
+          `👋 ¡Hola! Bienvenido a **${businessInfo.name}**. Soy tu asistente virtual. 🤖\n\n¿Te gustaría ver nuestro **Menú** de ${businessInfo.type} o hacer una reserva?`,
+          `¡Hola! 👋 Estás en el chat de **${businessInfo.name}**. Estoy aquí para tomar tu pedido o responder dudas.\n\n¿En qué te ayudo?`
+        ],
+        menu: [
+          menuList 
+            ? `🍽️ **Este es nuestro Menú:**\n\n${menuList}\n\n📝 **¿Qué te gustaría ordenar hoy?**`
+            : `💰 En **${businessInfo.name}** ofrecemos: ${businessInfo.description}.\n\n¿Buscas el precio de algo específico?`
+        ],
+        payment_handoff: [
+          `✅ ¡Perfecto! He tomado nota.\n\n💳 **Aceptamos:** ${activeMethods}.\n\n¿Cuál prefieres para cerrar el pedido?`,
+          `¡Entendido! 📝 Ya registré tu pedido.\n\nPara el pago, aceptamos: **${activeMethods}**. \n\nIndícame cuál prefieres usar.`
+        ],
+        // NUEVA RESPUESTA FINAL (CONFIRMACIÓN)
+        final: [
+          `🎉 **¡Pedido Confirmado!** 🚀\n\nHe registrado tu pago con ese método. Un miembro de nuestro equipo se acercará o te contactará en breve para finalizar.\n\n¡Gracias por elegir **${businessInfo.name}**!`,
+          `✅ **¡Listo!** Ya avisé al equipo sobre tu pago y pedido. Todo está en marcha.\n\n¡Que lo disfrutes! 😊`
+        ],
+        service: [`✨ En **${businessInfo.name}** somos especialistas en **${businessInfo.type}**. Ofrecemos: ${businessInfo.description}`],
+        info: [`📍 Estamos ubicados en: **${businessInfo.address}**.\n⏰ Horario: **${businessInfo.hours}**.`],
+        closing: [`📝 ¡Anotado! ¿Ese sería todo tu pedido o deseas agregar algo más?`],
+        delivery_question: [`📝 ¡Excelente! Para preparar tu pedido...\n\n¿Lo prefieres **para llevar** 🥡 o para **consumir aquí** 🍽️?`],
+        default: [`Entiendo "${userMessage}".\n\nPero para ayudarte mejor, ¿quieres ver el **Menú**, la **Ubicación** o hacer un **Pedido**?`]
       },
       en: {
-        hours: `⏰ Our hours are: ${businessInfo.hours || 'Mon-Fri 9AM-6PM'}. Need anything else?`,
-        location: `📍 We're located at: ${businessInfo.address || 'Check our location on Google Maps'}. See you soon!`,
-        phone: `📞 Contact us: ${businessInfo.phone || '+1 (555) 123-4567'}. I'm also here to help via chat.`,
-        price: `💰 Prices vary by service. ${businessInfo.description} Which service are you interested in?`,
-        booking: `📅 Sure! I can help you schedule. What day and time works for you? You can also call us at ${businessInfo.phone || 'phone'}.`,
-        service: `✨ At ${businessInfo.name} we offer: ${businessInfo.description}. Anything specific you'd like to know?`,
-        payment: `💳 We accept multiple payment methods: credit/debit cards, cash, and transfers. How would you prefer to pay?`,
-        hello: `👋 Hello! Welcome to ${businessInfo.name}. ${t.canHelp}`,
-        thanks: `😊 You're very welcome! I'm here if you need anything else. Have a great day!`,
-        default: `I understand your question about "${userMessage}".
-
-At ${businessInfo.name}, ${businessInfo.description}
-
-Is there anything more specific I can help with? I can inform you about:
-• Hours and location
-• Services and prices
-• Bookings and appointments
-• Payment methods`
+        greeting: [`👋 Hi! Welcome to **${businessInfo.name}**. Would you like to see our **Menu**?`],
+        menu: [
+          menuList 
+            ? `🍽️ **Here is our Menu:**\n\n${menuList}\n\n📝 **What would you like to order?**`
+            : `💰 At **${businessInfo.name}**, we offer: ${businessInfo.description}.`
+        ],
+        payment_handoff: [
+           `✅ Perfect! Noted.\n\n💳 **We accept:** ${activeMethods}.\n\nWhich one do you prefer?`
+        ],
+        final: [
+          `🎉 **Order Confirmed!** 🚀\n\nI've registered your payment method. A staff member will verify it shortly.\n\nThanks for choosing **${businessInfo.name}**!`,
+        ],
+        service: [`✨ We specialize in **${businessInfo.type}**. We offer: ${businessInfo.description}`],
+        info: [`📍 Location: **${businessInfo.address}**.\n⏰ Hours: **${businessInfo.hours}**.`],
+        closing: [`📝 Noted! Anything else you'd like to add?`],
+        delivery_question: [`📝 Great! Is this **to go** 🥡 or to **eat in** 🍽️?`],
+        default: [`I understand. Would you like to see the **Menu** or our **Location**?`]
       },
       pt: {
-        hours: `⏰ Nosso horário: ${businessInfo.hours || 'Seg-Sex 9h-18h'}. Precisa de mais algo?`,
-        location: `📍 Estamos em: ${businessInfo.address || 'Veja nossa localização no Google Maps'}. Te esperamos!`,
-        phone: `📞 Nos contate: ${businessInfo.phone || '+55 (11) 1234-5678'}. Também estou aqui para ajudar por chat.`,
-        price: `💰 Os preços variam por serviço. ${businessInfo.description} Qual serviço te interessa?`,
-        booking: `📅 Claro! Posso ajudar a agendar. Que dia e hora você prefere? Também pode ligar para ${businessInfo.phone || 'telefone'}.`,
-        service: `✨ Na ${businessInfo.name} oferecemos: ${businessInfo.description}. Algo específico que gostaria de saber?`,
-        payment: `💳 Aceitamos várias formas de pagamento: cartão de crédito/débito, dinheiro e transferências. Como prefere pagar?`,
-        hello: `👋 Olá! Bem-vindo à ${businessInfo.name}. ${t.canHelp}`,
-        thanks: `😊 De nada! Estou aqui se precisar de mais algo. Tenha um ótimo dia!`,
-        default: `Entendo sua pergunta sobre "${userMessage}".
-
-Na ${businessInfo.name}, ${businessInfo.description}
-
-Há algo mais específico em que possa ajudar? Posso informar sobre:
-• Horários e localização
-• Serviços e preços
-• Reservas e agendamentos
-• Formas de pagamento`
+        greeting: [`👋 Olá! Bem-vindo à **${businessInfo.name}**. Gostaria de ver nosso **Menu**?`],
+        menu: [
+          menuList 
+            ? `🍽️ **Aqui está nosso Menu:**\n\n${menuList}\n\n📝 **O que gostaria de pedir?**`
+            : `💰 Na **${businessInfo.name}**, oferecemos: ${businessInfo.description}.`
+        ],
+        payment_handoff: [
+           `✅ Perfeito! Anotado.\n\n💳 **Aceitamos:** ${activeMethods}.\n\nQual forma de pagamento prefere?`
+        ],
+        final: [
+          `🎉 **Pedido Confirmado!** 🚀\n\nRegistrei seu pagamento. Um atendente confirmará tudo em instantes.\n\nObrigado por escolher a **${businessInfo.name}**!`,
+        ],
+        service: [`✨ Somos especialistas em **${businessInfo.type}**. Oferecemos: ${businessInfo.description}`],
+        info: [`📍 Estamos em: **${businessInfo.address}**.\n⏰ Horário: **${businessInfo.hours}**.`],
+        closing: [`📝 Anotado! Deseja adicionar algo mais?`],
+        delivery_question: [`📝 Ótimo! É **para viagem** 🥡 ou para **consumir aqui** 🍽️?`],
+        default: [`Entendi. Gostaria de ver o **Menu** ou nossa **Localização**?`]
       }
     };
 
-    const langResponses = responses[selectedLanguage];
+    const langParams = responses[selectedLanguage] || responses.es;
 
-    if (msg.includes('horario') || msg.includes('hora') || msg.includes('hours') || msg.includes('horário') || msg.includes('abierto') || msg.includes('open')) {
-      return langResponses.hours;
-    }
-    if (msg.includes('dirección') || msg.includes('ubicación') || msg.includes('location') || msg.includes('localização') || msg.includes('donde') || msg.includes('where')) {
-      return langResponses.location;
-    }
-    if (msg.includes('teléfono') || msg.includes('telefono') || msg.includes('phone') || msg.includes('contato') || msg.includes('llamar') || msg.includes('call')) {
-      return langResponses.phone;
-    }
-    if (msg.includes('precio') || msg.includes('price') || msg.includes('preço') || msg.includes('cuanto') || msg.includes('cost')) {
-      return langResponses.price;
-    }
-    if (msg.includes('reserva') || msg.includes('cita') || msg.includes('booking') || msg.includes('agend') || msg.includes('appointment')) {
-      return langResponses.booking;
-    }
-    if (msg.includes('servicio') || msg.includes('service') || msg.includes('serviço') || msg.includes('ofrecen') || msg.includes('offer')) {
-      return langResponses.service;
-    }
-    if (msg.includes('pago') || msg.includes('payment') || msg.includes('pagamento') || msg.includes('pay')) {
-      return langResponses.payment;
-    }
-    if (msg.includes('hola') || msg.includes('hello') || msg.includes('olá') || msg.includes('hi') || msg.includes('hey') || msg.length < 10) {
-      return langResponses.hello;
-    }
-    if (msg.includes('gracias') || msg.includes('thanks') || msg.includes('obrigado') || msg.includes('thank')) {
-      return langResponses.thanks;
+    // --- LÓGICA DE CONVERSACIÓN ---
+
+    // 1. CONFIRMACIÓN FINAL DE PAGO (¡ESTO FALTABA!)
+    if (msg.includes('tarjeta') || msg.includes('card') || msg.includes('pix') || msg.includes('efectivo') || 
+        msg.includes('cash') || msg.includes('dinheiro') || msg.includes('paypal') || msg.includes('transferencia')) {
+        return pick(langParams.final);
     }
 
-    return langResponses.default;
+    // 2. PARA LLEVAR / COMER AQUÍ -> PIDE PAGO
+    if (msg.includes('llevar') || msg.includes('aqui') || msg.includes('aquí') || msg.includes('mesa') || 
+        msg.includes('to go') || msg.includes('eat in') || msg.includes('pickup') || 
+        msg.includes('viagem') || msg.includes('consumir')) {
+        return pick(langParams.payment_handoff);
+    }
+
+    // 3. PEDIDO / PRODUCTOS
+    if (msg.includes('quiero') || msg.includes('dame') || msg.includes('ordenar') || msg.includes('pedir') || 
+        msg.includes('want') || msg.includes('order') || productMatch) { 
+        
+        if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta')) return pick(langParams.menu);
+        return pick(langParams.delivery_question);
+    }
+
+    // 4. MENÚ / PRECIOS
+    if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta') || msg.includes('lista') || 
+        msg.includes('precio') || msg.includes('cost')) {
+        return pick(langParams.menu);
+    }
+
+    // 5. AFIRMACIONES / NEGACIONES
+    if (msg === 'si' || msg === 'sí' || msg.includes('claro') || msg.includes('yes')) return pick(langParams.menu);
+    if (msg.includes('no') || msg.includes('nada mas')) return pick(langParams.delivery_question);
+
+    // 6. INFO / SALUDOS
+    if (msg.includes('servicio') || msg.includes('haces')) return pick(langParams.service);
+    if (msg.includes('hora') || msg.includes('ubic') || msg.includes('dond')) return pick(langParams.info);
+    if (msg.includes('hola') || msg.includes('buen') || msg.includes('hi')) return pick(langParams.greeting);
+
+    if (msg.includes('gracias') || msg.includes('thank') || msg.includes('obrigad')) {
+        return selectedLanguage === 'es' ? "¡De nada! 🤖" : "You're welcome! 🤖";
+    }
+
+    return pick(langParams.default);
   };
 
   const handleSend = async (imageAttached = false) => {
@@ -1200,17 +1333,48 @@ app.post('/whatsapp-webhook', async (req, res) => {
                     />
                   </div>
 
+                 {/* SELECTOR DE TIPO DE NEGOCIO MEJORADO */}
                   <div>
                     <label className="block text-sm font-semibold text-cyan-300 mb-2">
                       {t.businessType} *
                     </label>
-                    <input
-                      type="text"
-                      value={businessInfo.type}
-                      onChange={(e) => setBusinessInfo({...businessInfo, type: e.target.value})}
-                      placeholder={t.businessTypePlaceholder}
-                      className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition"
-                    />
+                    <div className="relative">
+                      <select
+                        value={businessTypes.some(t => t.value === businessInfo.type) ? businessInfo.type : 'custom'}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === 'custom') {
+                            setBusinessInfo({...businessInfo, type: ''}); // Limpia para que escriba
+                          } else {
+                            setBusinessInfo({...businessInfo, type: val});
+                          }
+                        }}
+                        className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled className="bg-slate-900">Selecciona una industria...</option>
+                        {businessTypes.map(type => (
+                          <option key={type.id} value={type.value} className="bg-slate-900">
+                            {type.label}
+                          </option>
+                        ))}
+                        <option value="custom" className="bg-slate-900">✨ Otro (Escribir manual)</option>
+                      </select>
+                      {/* Flechita del select */}
+                      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-cyan-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                    
+                    {/* Si elige "Otro" o no está en la lista, muestra el input manual */}
+                    {(!businessTypes.some(t => t.value === businessInfo.type) && businessInfo.type !== '') || businessInfo.type === '' ? (
+                      <input
+                        type="text"
+                        value={businessInfo.type}
+                        onChange={(e) => setBusinessInfo({...businessInfo, type: e.target.value})}
+                        placeholder="Escribe tu tipo de negocio (ej. Tienda de Zapatos)"
+                        className="mt-3 w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition animate-fade-in"
+                      />
+                    ) : null}
                   </div>
                 </div>
 
@@ -1591,26 +1755,26 @@ app.post('/whatsapp-webhook', async (req, res) => {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { key: 'stripeEnabled', label: 'Stripe', icon: '💳' },
-                    { key: 'mercadoPagoEnabled', label: 'MercadoPago', icon: '💵' },
-                    { key: 'paypalEnabled', label: 'PayPal', icon: '🅿️' },
-                    { key: 'applePayEnabled', label: 'Apple Pay', icon: '🍎' },
-                    { key: 'googlePayEnabled', label: 'Google Pay', icon: '🔵' },
-                    { key: 'amazonPayEnabled', label: 'Amazon Pay', icon: '📦' },
-                    { key: 'usdtEnabled', label: 'USDT', icon: '₮' }
+                    { key: 'pixEnabled', label: 'Pix (Brasil)', icon: '💠' },
+                    { key: 'creditCardEnabled', label: 'Crédito', icon: '💳' },
+                    { key: 'debitCardEnabled', label: 'Débito', icon: '💳' },
+                    { key: 'cashEnabled', label: 'Efectivo', icon: '💵' },
+                    { key: 'stripeEnabled', label: 'Stripe', icon: 'S' },
+                    { key: 'mercadoPagoEnabled', label: 'MercadoPago', icon: 'M' },
+                    { key: 'paypalEnabled', label: 'PayPal', icon: 'P' }
                   ].map((payment) => (
                     <button
                       key={payment.key}
                       onClick={() => setPaymentInfo({...paymentInfo, [payment.key]: !paymentInfo[payment.key]})}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-lg transition text-sm font-medium border ${
                         paymentInfo[payment.key]
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/50 text-green-300'
                           : 'bg-white/5 border-cyan-500/20 text-cyan-400/60 hover:bg-white/10 hover:border-cyan-500/30'
                       }`}
                     >
                       <span className="text-lg">{payment.icon}</span>
                       <span>{payment.label}</span>
-                      {paymentInfo[payment.key] && <Check className="w-4 h-4 ml-auto" />}
+                      {paymentInfo[payment.key] && <Check className="w-4 h-4 ml-auto text-green-400" />}
                     </button>
                   ))}
                 </div>
