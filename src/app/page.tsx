@@ -30,6 +30,23 @@ export default function AIBusinessAssistantPro() {
   });
 
   const [products, setProducts] = useState([]);
+  // --- NUEVOS ESTADOS PARA EL MENÚ Y SUBIDA DE FOTOS ---
+  const [cart, setCart] = useState({}); 
+  const [showMenuUI, setShowMenuUI] = useState(false);
+  // NUEVO: Estado para el Calendario
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  // Función para leer archivos del PC
+  const handleFileUpload = (e, callback) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) callback(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '', image: '' });
   
   const [isConfigured, setIsConfigured] = useState(false);
@@ -74,38 +91,57 @@ export default function AIBusinessAssistantPro() {
     }
   };
 
-  const exampleProducts = [
-    { name: 'Espresso', price: '3.50', category: 'Bebidas Calientes', image: '☕' },
-    { name: 'Cappuccino', price: '4.50', category: 'Bebidas Calientes', image: '☕' },
-    { name: 'Latte', price: '4.50', category: 'Bebidas Calientes', image: '🥛' },
-    { name: 'Frappé', price: '5.50', category: 'Bebidas Frías', image: '🥤' },
-    { name: 'Smoothie', price: '6.00', category: 'Bebidas Frías', image: '🍹' },
-    { name: 'Cheesecake', price: '5.50', category: 'Postres', image: '🍰' },
-    { name: 'Brownie', price: '4.50', category: 'Postres', image: '🍫' }
-  ];
+  // PRODUCTOS DE EJEMPLO TRADUCIDOS
+  const exampleProducts = {
+    es: [
+      { name: 'Espresso', price: '3.50', category: 'Bebidas Calientes', image: '☕' },
+      { name: 'Cappuccino', price: '4.50', category: 'Bebidas Calientes', image: '☕' },
+      { name: 'Latte', price: '4.50', category: 'Bebidas Calientes', image: '🥛' },
+      { name: 'Frappé', price: '5.50', category: 'Bebidas Frías', image: '🥤' },
+      { name: 'Smoothie', price: '6.00', category: 'Bebidas Frías', image: '🍹' },
+      { name: 'Cheesecake', price: '5.50', category: 'Postres', image: '🍰' },
+      { name: 'Brownie', price: '4.50', category: 'Postres', image: '🍫' }
+    ],
+    en: [
+      { name: 'Espresso', price: '3.50', category: 'Hot Drinks', image: '☕' },
+      { name: 'Cappuccino', price: '4.50', category: 'Hot Drinks', image: '☕' },
+      { name: 'Latte', price: '4.50', category: 'Hot Drinks', image: '🥛' },
+      { name: 'Frappe', price: '5.50', category: 'Cold Drinks', image: '🥤' },
+      { name: 'Smoothie', price: '6.00', category: 'Cold Drinks', image: '🍹' },
+      { name: 'Cheesecake', price: '5.50', category: 'Desserts', image: '🍰' },
+      { name: 'Brownie', price: '4.50', category: 'Desserts', image: '🍫' }
+    ],
+    pt: [
+      { name: 'Espresso', price: '3.50', category: 'Bebidas Quentes', image: '☕' },
+      { name: 'Cappuccino', price: '4.50', category: 'Bebidas Quentes', image: '☕' },
+      { name: 'Latte', price: '4.50', category: 'Bebidas Quentes', image: '🥛' },
+      { name: 'Frappé', price: '5.50', category: 'Bebidas Geladas', image: '🥤' },
+      { name: 'Smoothie', price: '6.00', category: 'Bebidas Geladas', image: '🍹' },
+      { name: 'Cheesecake', price: '5.50', category: 'Sobremesas', image: '🍰' },
+      { name: 'Brownie', price: '4.50', category: 'Sobremesas', image: '🍫' }
+    ]
+  };
 
-  // LISTA DE INDUSTRIAS PARA EL SELECTOR
-  const businessTypes = [
-    { id: 'coffee', label: '☕ Cafetería / Restaurante', value: 'Restaurante' },
-    { id: 'health', label: '🦷 Clínica Dental / Salud', value: 'Clínica de Salud' },
-    { id: 'gym', label: '💪 Gimnasio / Fitness', value: 'Centro de Fitness' },
-    { id: 'realestate', label: '🏠 Inmobiliaria', value: 'Agencia Inmobiliaria' },
-    { id: 'legal', label: '⚖️ Legal / Abogados', value: 'Estudio Jurídico' },
-    { id: 'store', label: '🛍️ Tienda / E-commerce', value: 'Tienda' },
-    { id: 'beauty', label: '💇‍♀️ Belleza / Estética', value: 'Centro de Estética' },
-    { id: 'auto', label: '🔧 Taller Mecánico', value: 'Taller Automotriz' },
-    { id: 'education', label: '🎓 Educación / Cursos', value: 'Academia' },
-    { id: 'other', label: '✨ Otro (Personalizado)', value: '' }
-  ];
-
+  // --- NUEVO: EFECTO MÁGICO PARA ACTUALIZAR LA DEMO AL CAMBIAR IDIOMA ---
+  useEffect(() => {
+    // 1. Verificamos si estás usando uno de los nombres de la Demo (Café Delicias, etc.)
+    const isDemoStore = Object.values(exampleConfigs).some(conf => conf.name === businessInfo.name);
+    
+    // 2. Si es una demo, actualizamos todo automáticamente al nuevo idioma
+    if (isDemoStore) {
+      setBusinessInfo(exampleConfigs[selectedLanguage]);
+      setProducts(exampleProducts[selectedLanguage]);
+    }
+  }, [selectedLanguage]); // Se activa cada vez que cambias el idioma
+  
   const loadExampleConfig = () => {
     const example = exampleConfigs[selectedLanguage];
     
     // 1. Carga la Info del Negocio
     setBusinessInfo(example);
     
-    // 2. Carga los Productos de ejemplo
-    setProducts(exampleProducts); 
+    // 2. Carga los Productos de ejemplo (SEGÚN IDIOMA)
+    setProducts(exampleProducts[selectedLanguage]); 
 
     // 3. ACTIVA LOS PAGOS PARA LA DEMO
     // (Aquí sí van los tres puntos antes de paymentInfo, es código real)
@@ -233,13 +269,10 @@ O que você gostaria de consultar primeiro?`
 
   const translations = {
     es: {
-      // Navigation
       chat: 'Chat',
       config: 'Configuración',
       analytics: 'Analíticas',
       integrations: 'Integraciones',
-      
-      // General
       welcome: '¡Hola! Bienvenido a',
       canHelp: 'Soy tu asistente virtual. ¿En qué puedo ayudarte?',
       typing: 'escribiendo...',
@@ -249,8 +282,6 @@ O que você gostaria de consultar primeiro?`
       loadExample: 'Cargar Ejemplo de Demostración',
       demoLoaded: 'Ejemplo cargado - ¡Prueba el chat ahora!',
       backToWelcome: 'Volver al Inicio',
-      
-      // Configuration
       businessConfig: 'Configuración del Negocio',
       configSubtitle: 'Personaliza tu asistente con la información de tu negocio',
       businessName: 'Nombre del Negocio',
@@ -278,8 +309,20 @@ O que você gostaria de consultar primeiro?`
       productImage: 'Emoji o URL imagen',
       addProduct: '+ Agregar Producto',
       save: 'Guardar Configuración',
+      selectIndustry: 'Selecciona una industria...',
+      otherIndustry: '✨ Otro (Escribir manual)',
+      typeManualPlaceholder: 'Escribe tu tipo de negocio (ej. Tienda de Zapatos)',
+      uploadLogo: 'Cargar Logo',
+      uploadPhoto: '+ Cargar Foto desde PC',
+      ifNoPhoto: 'Si no subes foto, usaremos el emoji por defecto.',
+      remove: 'Eliminar',
+      preview: 'Vista previa',
       
-      // Analytics
+      // ESTOS SON LOS QUE FALTABAN:
+      productNamePlaceholder: 'Nombre del Servicio/Producto',
+      productPricePlaceholder: 'Precio ($)',
+      productDescriptionPlaceholder: 'Descripción (ej: Incluye revisión, vacunas, ingredientes...)',
+      
       totalChats: 'Total de Chats',
       today: 'Hoy',
       avgResponse: 'Respuesta Promedio',
@@ -293,8 +336,6 @@ O que você gostaria de consultar primeiro?`
       schedules: 'Horarios',
       location: 'Ubicación',
       prices: 'Precios',
-      
-      // Integrations
       websiteWidget: 'Widget para Sitio Web',
       embedWebsite: 'Incrustar en cualquier sitio web',
       copyWidgetCode: 'Copiar Código del Widget',
@@ -302,22 +343,21 @@ O que você gostaria de consultar primeiro?`
       connectTwilio: 'Conectar vía Twilio',
       copyWhatsappCode: 'Copiar Código WhatsApp',
       paymentProcessing: 'Procesamiento de Pagos',
-      stripeMP: 'Stripe & MercadoPago',
-      enableStripe: 'Activar Stripe',
-      enableMP: 'Activar MercadoPago',
+      paymentMethodsAvailable: 'Múltiples métodos de pago disponibles',
+      payPix: 'Pix (Brasil)',
+      payCredit: 'Crédito',
+      payDebit: 'Débito',
+      payCash: 'Efectivo',
+      payStripe: 'Stripe',
+      payMP: 'MercadoPago',
+      payPaypal: 'PayPal',
       multiLanguageSupport: 'Soporte Multi-idioma',
-      languagesActive: 'ES, EN, PT activos',
+      selectLanguages: 'Selecciona los idiomas que deseas activar',
       readyToDeploy: 'Listo para Desplegar',
       exportAssistant: 'Exporta tu asistente completo a tu propio servidor',
       exportCode: 'Exportar Código',
       exportConfig: 'Exportar Configuración',
       exportDocs: 'Exportar Documentación',
-      
-      // Messages
-      export: 'Exportar',
-      hours: 'Horario',
-      location: 'Ubicación',
-      prices: 'Precios',
       voiceEnabled: 'Voz activada',
       voiceDisabled: 'Voz desactivada',
       recording: 'Grabando...',
@@ -329,16 +369,16 @@ O que você gostaria de consultar primeiro?`
       whatsappReady: 'WhatsApp Listo',
       paymentIntegration: 'Integración de Pagos',
       proTip: 'Consejo Pro',
-      proTipText: 'Configura tu negocio, prueba el chat y luego exporta a tu sitio web'
+      proTipText: 'Configura tu negocio, prueba el chat y luego exporta a tu sitio web',
+      calendarTitle: '📅 Agendar Cita',
+      selectDate: 'Selecciona un día:',
+      selectTime: 'Horarios disponibles:'
     },
     en: {
-      // Navigation
       chat: 'Chat',
       config: 'Config',
       analytics: 'Analytics',
       integrations: 'Integrations',
-      
-      // General
       welcome: 'Hello! Welcome to',
       canHelp: 'I\'m your virtual assistant. How can I help you?',
       typing: 'typing...',
@@ -348,8 +388,6 @@ O que você gostaria de consultar primeiro?`
       loadExample: 'Load Demo Example',
       demoLoaded: 'Example loaded - Try the chat now!',
       backToWelcome: 'Back to Home',
-      
-      // Configuration
       businessConfig: 'Business Configuration',
       configSubtitle: 'Personalize your AI assistant with your business information',
       businessName: 'Business Name',
@@ -377,8 +415,20 @@ O que você gostaria de consultar primeiro?`
       productImage: 'Emoji or image URL',
       addProduct: '+ Add Product',
       save: 'Save Configuration',
+      selectIndustry: 'Select an industry...',
+      otherIndustry: '✨ Other (Type manually)',
+      typeManualPlaceholder: 'Type your business type (e.g. Shoe Store)',
+      uploadLogo: 'Upload Logo',
+      uploadPhoto: '+ Upload Photo from PC',
+      ifNoPhoto: 'If no photo uploaded, we\'ll use the default emoji.',
+      remove: 'Remove',
+      preview: 'Preview',
       
-      // Analytics
+      // ESTOS FALTABAN EN INGLÉS:
+      productNamePlaceholder: 'Service/Product Name',
+      productPricePlaceholder: 'Price ($)',
+      productDescriptionPlaceholder: 'Description (e.g. Includes checkup, vaccines, ingredients...)',
+
       totalChats: 'Total Chats',
       today: 'Today',
       avgResponse: 'Avg Response',
@@ -392,8 +442,6 @@ O que você gostaria de consultar primeiro?`
       schedules: 'Hours',
       location: 'Location',
       prices: 'Prices',
-      
-      // Integrations
       websiteWidget: 'Website Widget',
       embedWebsite: 'Embed in any website',
       copyWidgetCode: 'Copy Widget Code',
@@ -401,22 +449,21 @@ O que você gostaria de consultar primeiro?`
       connectTwilio: 'Connect via Twilio',
       copyWhatsappCode: 'Copy WhatsApp Code',
       paymentProcessing: 'Payment Processing',
-      stripeMP: 'Stripe & MercadoPago',
-      enableStripe: 'Enable Stripe',
-      enableMP: 'Enable MercadoPago',
+      paymentMethodsAvailable: 'Multiple payment methods available',
+      payPix: 'Pix (Brazil)',
+      payCredit: 'Credit Card',
+      payDebit: 'Debit Card',
+      payCash: 'Cash',
+      payStripe: 'Stripe',
+      payMP: 'MercadoPago',
+      payPaypal: 'PayPal',
       multiLanguageSupport: 'Multi-Language Support',
-      languagesActive: 'ES, EN, PT active',
+      selectLanguages: 'Select languages to activate',
       readyToDeploy: 'Ready to Deploy',
       exportAssistant: 'Export your complete AI assistant to your own server',
       exportCode: 'Export Code',
       exportConfig: 'Export Config',
       exportDocs: 'Export Docs',
-      
-      // Messages
-      export: 'Export',
-      hours: 'Hours',
-      location: 'Location',
-      prices: 'Prices',
       voiceEnabled: 'Voice enabled',
       voiceDisabled: 'Voice disabled',
       recording: 'Recording...',
@@ -428,16 +475,16 @@ O que você gostaria de consultar primeiro?`
       whatsappReady: 'WhatsApp Ready',
       paymentIntegration: 'Payment Integration',
       proTip: 'Pro Tip',
-      proTipText: 'Configure your business, test the chat, then export to your website'
+      proTipText: 'Configure your business, test the chat, then export to your website',
+      calendarTitle: '📅 Book Appointment',
+      selectDate: 'Select a date:',
+      selectTime: 'Available times:'
     },
     pt: {
-      // Navigation
       chat: 'Chat',
       config: 'Configuração',
       analytics: 'Análises',
       integrations: 'Integrações',
-      
-      // General
       welcome: 'Olá! Bem-vindo a',
       canHelp: 'Sou seu assistente virtual. Como posso ajudá-lo?',
       typing: 'digitando...',
@@ -447,8 +494,6 @@ O que você gostaria de consultar primeiro?`
       loadExample: 'Carregar Exemplo de Demonstração',
       demoLoaded: 'Exemplo carregado - Experimente o chat agora!',
       backToWelcome: 'Voltar ao Início',
-      
-      // Configuration
       businessConfig: 'Configuração do Negócio',
       configSubtitle: 'Personalize seu assistente com as informações do seu negócio',
       businessName: 'Nome do Negócio',
@@ -476,8 +521,20 @@ O que você gostaria de consultar primeiro?`
       productImage: 'Emoji ou URL imagem',
       addProduct: '+ Adicionar Produto',
       save: 'Salvar Configuração',
+      selectIndustry: 'Selecione uma indústria...',
+      otherIndustry: '✨ Outro (Digitar manual)',
+      typeManualPlaceholder: 'Digite seu tipo de negócio (ex. Loja de Sapatos)',
+      uploadLogo: 'Carregar Logo',
+      uploadPhoto: '+ Carregar Foto do PC',
+      ifNoPhoto: 'Se não enviar foto, usaremos o emoji padrão.',
+      remove: 'Remover',
+      preview: 'Visualização',
       
-      // Analytics
+      // ESTOS FALTABAN EN PORTUGUÉS:
+      productNamePlaceholder: 'Nome do Serviço/Produto',
+      productPricePlaceholder: 'Preço ($)',
+      productDescriptionPlaceholder: 'Descrição (ex: Inclui revisão, vacinas, ingredientes...)',
+      
       totalChats: 'Total de Chats',
       today: 'Hoje',
       avgResponse: 'Resposta Média',
@@ -491,31 +548,28 @@ O que você gostaria de consultar primeiro?`
       schedules: 'Horários',
       location: 'Localização',
       prices: 'Preços',
-      
-      // Integrations
       websiteWidget: 'Widget para Site',
       embedWebsite: 'Incorporar em qualquer site',
       copyWidgetCode: 'Copiar Código do Widget',
       whatsappIntegration: 'Integração WhatsApp',
-      connectTwilio: 'Conectar via Twilio',
-      copyWhatsappCode: 'Copiar Código WhatsApp',
+      connectTwilio: 'Conetar via Twilio',
+      copyWhatsappCode: 'Copiar Código do WhatsApp', // <--- ESTO ESTABA MAL
       paymentProcessing: 'Processamento de Pagamentos',
-      stripeMP: 'Stripe & MercadoPago',
-      enableStripe: 'Ativar Stripe',
-      enableMP: 'Ativar MercadoPago',
+      paymentMethodsAvailable: 'Múltiplos métodos de pagamento disponíveis',
+      payPix: 'Pix (Brasil)',
+      payCredit: 'Crédito',
+      payDebit: 'Débito',
+      payCash: 'Dinheiro',
+      payStripe: 'Stripe',
+      payMP: 'MercadoPago',
+      payPaypal: 'PayPal',
       multiLanguageSupport: 'Suporte Multi-idioma',
-      languagesActive: 'ES, EN, PT ativos',
+      selectLanguages: 'Selecione os idiomas para ativar',
       readyToDeploy: 'Pronto para Implantar',
       exportAssistant: 'Exporte seu assistente completo para seu próprio servidor',
       exportCode: 'Exportar Código',
       exportConfig: 'Exportar Configuração',
       exportDocs: 'Exportar Documentação',
-      
-      // Messages
-      export: 'Exportar',
-      hours: 'Horário',
-      location: 'Localização',
-      prices: 'Preços',
       voiceEnabled: 'Voz ativada',
       voiceDisabled: 'Voz desativada',
       recording: 'Gravando...',
@@ -527,11 +581,33 @@ O que você gostaria de consultar primeiro?`
       whatsappReady: 'WhatsApp Pronto',
       paymentIntegration: 'Integração de Pagamentos',
       proTip: 'Dica Pro',
-      proTipText: 'Configure seu negócio, teste o chat e depois exporte para seu site'
+      proTipText: 'Configure seu negócio, teste o chat e depois exporte para seu site',
+      calendarTitle: '📅 Agendar Horário',
+      selectDate: 'Selecione um dia:',
+      selectTime: 'Horários disponíveis:'
     }
   };
 
   const t = translations[selectedLanguage];
+
+  // LISTA DE INDUSTRIAS PARA EL SELECTOR
+  // LISTA DE INDUSTRIAS CON EMOJIS PREDEFINIDOS
+  // LISTA DE INDUSTRIAS DINÁMICA (Según idioma)
+  const getBusinessTypes = () => [
+    { id: 'coffee', label: selectedLanguage === 'pt' ? '☕ Cafeteria / Restaurante' : (selectedLanguage === 'en' ? '☕ Coffee Shop / Restaurant' : '☕ Cafetería / Restaurante'), value: 'Restaurante', emoji: '☕' },
+    { id: 'health', label: selectedLanguage === 'pt' ? '🦷 Clínica Odontológica / Saúde' : (selectedLanguage === 'en' ? '🦷 Dental / Health Clinic' : '🦷 Clínica Dental / Salud'), value: 'Clínica de Salud', emoji: '🦷' },
+    { id: 'vet', label: selectedLanguage === 'pt' ? '🐾 Veterinária / Pets' : (selectedLanguage === 'en' ? '🐾 Vet / Pets' : '🐾 Veterinaria / Mascotas'), value: 'Clínica Veterinaria', emoji: '🐶' },
+    { id: 'gym', label: selectedLanguage === 'pt' ? '💪 Academia / Fitness' : (selectedLanguage === 'en' ? '💪 Gym / Fitness' : '💪 Gimnasio / Fitness'), value: 'Centro de Fitness', emoji: '💪' },
+    { id: 'realestate', label: selectedLanguage === 'pt' ? '🏠 Imobiliária' : (selectedLanguage === 'en' ? '🏠 Real Estate' : '🏠 Inmobiliaria'), value: 'Agencia Inmobiliaria', emoji: '🏠' },
+    { id: 'legal', label: selectedLanguage === 'pt' ? '⚖️ Jurídico / Advogados' : (selectedLanguage === 'en' ? '⚖️ Legal / Lawyers' : '⚖️ Legal / Abogados'), value: 'Estudio Jurídico', emoji: '⚖️' },
+    { id: 'store', label: selectedLanguage === 'pt' ? '🛍️ Loja / E-commerce' : (selectedLanguage === 'en' ? '🛍️ Store / E-commerce' : '🛍️ Tienda / E-commerce'), value: 'Tienda', emoji: '🛍️' },
+    { id: 'beauty', label: selectedLanguage === 'pt' ? '💇‍♀️ Beleza / Estética' : (selectedLanguage === 'en' ? '💇‍♀️ Beauty / Spa' : '💇‍♀️ Belleza / Estética'), value: 'Centro de Estética', emoji: '💇‍♀️' },
+    { id: 'auto', label: selectedLanguage === 'pt' ? '🔧 Oficina Mecânica' : (selectedLanguage === 'en' ? '🔧 Auto Repair' : '🔧 Taller Mecánico'), value: 'Taller Automotriz', emoji: '🔧' },
+    { id: 'education', label: selectedLanguage === 'pt' ? '🎓 Educação / Cursos' : (selectedLanguage === 'en' ? '🎓 Education / Courses' : '🎓 Educación / Cursos'), value: 'Academia', emoji: '🎓' },
+    { id: 'other', label: t.otherIndustry, value: '', emoji: '🏢' }
+  ];
+  
+  const businessTypes = getBusinessTypes(); // Ejecutamos la función
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -682,23 +758,17 @@ Gostaria de ver os preços ou prefere uma demo?`
     const msg = userMessage.toLowerCase().trim();
     const pick = (options) => options[Math.floor(Math.random() * options.length)];
 
-    // 1. GENERADOR DE MENÚ
+    // 1. PREPARAR DATOS
     const menuList = products.length > 0 
       ? products.map(p => `• ${p.image || '🔹'} **${p.name}** ...... $${p.price}`).join('\n')
       : null;
 
-    // 2. DETECTOR DE PRODUCTOS (Esto es clave)
-    const productMatch = products.find(p => msg.includes(p.name.toLowerCase()));
-
-    // 3. MÉTODOS DE PAGO
     const getPaymentMethods = (lang) => {
         const methods = [];
         if (paymentInfo.pixEnabled) methods.push('Pix');
         if (paymentInfo.creditCardEnabled) methods.push(lang === 'pt' ? 'Cartão de Crédito' : (lang === 'en' ? 'Credit Card' : 'Tarjeta de Crédito'));
         if (paymentInfo.debitCardEnabled) methods.push(lang === 'pt' ? 'Cartão de Débito' : (lang === 'en' ? 'Debit Card' : 'Tarjeta de Débito'));
         if (paymentInfo.cashEnabled) methods.push(lang === 'pt' ? 'Dinheiro' : (lang === 'en' ? 'Cash' : 'Efectivo'));
-        if (paymentInfo.paypalEnabled) methods.push('PayPal');
-        if (paymentInfo.mercadoPagoEnabled) methods.push('MercadoPago');
         
         if (methods.length === 0) return lang === 'pt' ? 'Dinheiro' : (lang === 'en' ? 'Cash' : 'Efectivo');
         return methods.join(', ');
@@ -706,151 +776,186 @@ Gostaria de ver os preços ou prefere uma demo?`
 
     const activeMethods = getPaymentMethods(selectedLanguage);
 
+    // 2. RESPUESTAS POR IDIOMA (AHORA INCLUYE "THANKS")
     const responses = {
       es: {
-        greeting: [
-          `👋 ¡Hola! Bienvenido a **${businessInfo.name}**. Soy tu asistente virtual. 🤖\n\n¿Te gustaría ver nuestro **Menú** de ${businessInfo.type} o hacer una reserva?`,
-          `¡Hola! 👋 Estás en el chat de **${businessInfo.name}**. Estoy aquí para tomar tu pedido o responder dudas.\n\n¿En qué te ayudo?`
+        greeting: [`👋 ¡Hola! Bienvenido a ${businessInfo.name}.\n\nSoy tu asistente virtual. ¿En qué puedo ayudarte hoy?`],
+        menu: [ "📋 ¡Claro! Aquí tienes nuestro catálogo interactivo. Selecciona lo que necesites 👇", "📂 Abrí la lista de opciones para ti." ],
+        payment_handoff: [`✅ ¡Excelente! He recibido tu pedido.\n\nPara confirmar, indícame tu forma de pago preferida: **${activeMethods}**.`],
+        reservation: [`📅 ¡Perfecto! He abierto el calendario para ti.\n\nPor favor selecciona la fecha y hora en las opciones de abajo 👇`],
+        reservation_confirmed: [`🎉 **¡Excelente!** Tu reserva ha sido registrada correctamente. Te esperamos.`],
+        final: [`🎉 **¡Confirmado!** Tu pedido ya está en marcha. ¡Gracias!`],
+        service: [`✨ **Nuestros Servicios:**\n\n${businessInfo.description}\n\n¿Te gustaría ver el Menú o hacer una Reserva?`],
+        info: [`📍 Ubicación: ${businessInfo.address}. ⏰ Horario: ${businessInfo.hours}.`],
+        thanks: [
+            "😊 ¡Es un placer! Aquí estaré si se te antoja algo más.",
+            "¡A ti! Que tengas un día excelente. ☕",
+            "¡Gracias por visitarnos! Vuelve pronto. 👋",
+            "¡De nada! Estamos para servirte."
         ],
-        reservation: [
-          `📅 ¡Claro que sí! Me encantaría agendar tu reserva en **${businessInfo.name}**.\n\nPor favor dime:\n1. 👥 ¿Para cuántas personas?\n2. ⏰ ¿Qué día y hora prefieres?`,
-        ],
-        menu: [
-          menuList 
-            ? `🍽️ **Este es nuestro Menú:**\n\n${menuList}\n\n📝 **¿Qué te gustaría ordenar hoy?**`
-            : `💰 En **${businessInfo.name}** ofrecemos: ${businessInfo.description}.\n\n¿Buscas el precio de algo específico?`
-        ],
-        payment_handoff: [
-          `✅ ¡Perfecto! Para empezar a preparar tu pedido y que **no tengas que esperar**, necesito confirmar el pago.\n\n💳 **Aceptamos:** ${activeMethods}.\n\n¿Cuál usas?`,
-          `¡Entendido! 📝 Lo dejaremos listo para ti.\n\nPara confirmar la orden, por favor indica tu medio de pago: **${activeMethods}**.`
-        ],
-        final: [
-          `🎉 **¡Confirmado!** 🚀\n\nYa he avisado a nuestro equipo. Gracias por elegirnos.\n\n¡Te esperamos en **${businessInfo.name}**!`,
-          `✅ **¡Listo!** Todo está registrado correctamente.\n\n¡Gracias por tu preferencia! 😊`
-        ],
-        service: [`✨ En **${businessInfo.name}** somos especialistas en **${businessInfo.type}**. Ofrecemos: ${businessInfo.description}`],
-        info: [`📍 Estamos ubicados en: **${businessInfo.address}**.\n⏰ Horario: **${businessInfo.hours}**.`],
-        delivery_question: [`📝 ¡Excelente elección! 😋\n\nPara preparar tu pedido... ¿Lo prefieres **para llevar** 🥡 o para **consumir aquí** 🍽️?`],
-        default: [`Entiendo "${userMessage}".\n\nPero para ayudarte mejor, ¿quieres ver el **Menú**, la **Ubicación** o hacer un **Pedido**?`]
+        default: [`Entiendo "${userMessage}". ¿Quieres ver el **Menú**, hacer una **Reserva** o consultar la **Ubicación**?`]
       },
       en: {
-        greeting: [`👋 Hi! Welcome to **${businessInfo.name}**. Would you like to see our **Menu**?`],
-        reservation: [`📅 Sure! To book a table, I need to know:\n\n1. 👥 How many people?\n2. ⏰ Date and time?`],
-        menu: [
-          menuList 
-            ? `🍽️ **Here is our Menu:**\n\n${menuList}\n\n📝 **What would you like to order?**`
-            : `💰 At **${businessInfo.name}**, we offer: ${businessInfo.description}.`
+        greeting: [`👋 Hello! Welcome to ${businessInfo.name}.\n\nI'm your virtual assistant. How can I help you today?`],
+        menu: ["📋 Sure! Here is our interactive catalog. Select what you need 👇"],
+        payment_handoff: [`✅ Great! Order received.\n\nTo confirm, please choose your payment method: **${activeMethods}**.`],
+        reservation: [`📅 Great! I've opened the calendar for you.\n\nPlease select a date and time below 👇`],
+        reservation_confirmed: [`🎉 **Awesome!** Your reservation has been successfully booked. See you soon!`],
+        final: [`🎉 **Confirmed!** Your order is being processed. Thanks!`],
+        service: [`✨ **Our Services:**\n\n${businessInfo.description}\n\nWould you like to see the Menu or Book a table?`],
+        info: [`📍 Location: ${businessInfo.address}. ⏰ Hours: ${businessInfo.hours}.`],
+        thanks: [
+            "😊 My pleasure! I'm here if you need anything else.",
+            "You're welcome! Have a wonderful day. ☕",
+            "Thanks for visiting! Come back soon. 👋",
+            "No problem! Happy to help."
         ],
-        payment_handoff: [`✅ Perfect! To have it ready for you (**no waiting!**), please confirm payment.\n\n💳 **We accept:** ${activeMethods}.`],
-        final: [`🎉 **Confirmed!** 🚀\n\nI've notified the team. Thanks for choosing **${businessInfo.name}**!`],
-        service: [`✨ We specialize in **${businessInfo.type}**. We offer: ${businessInfo.description}`],
-        info: [`📍 Location: **${businessInfo.address}**.\n⏰ Hours: **${businessInfo.hours}**.`],
-        delivery_question: [`📝 Great choice! 😋\n\nIs this **to go** 🥡 or to **eat in** 🍽️?`],
-        default: [`I understand. Would you like to see the **Menu** or our **Location**?`]
+        default: [`I understand. Would you like to see the **Menu**, make a **Reservation**, or check our **Location**?`]
       },
       pt: {
-        greeting: [`👋 Olá! Bem-vindo à **${businessInfo.name}**. Gostaria de ver nosso **Menu**?`],
-        reservation: [`📅 Claro! Para agendar, preciso saber:\n\n1. 👥 Quantas pessoas?\n2. ⏰ Qual dia e horário?`],
-        menu: [
-          menuList 
-            ? `🍽️ **Aqui está nosso Menu:**\n\n${menuList}\n\n📝 **O que gostaria de pedir?**`
-            : `💰 Na **${businessInfo.name}**, oferecemos: ${businessInfo.description}.`
+        greeting: [`👋 Olá! Bem-vindo ao ${businessInfo.name}.\n\nSou seu assistente virtual. Como posso ajudar hoje?`],
+        menu: ["📋 Claro! Aqui está nosso catálogo interativo. Selecione o que precisa 👇"],
+        payment_handoff: [`✅ Ótimo! Recebi seu pedido.\n\nPara confirmar, indique o pagamento: **${activeMethods}**.`],
+        reservation: [`📅 Perfeito! Abri o calendário para você.\n\nPor favor, selecione data e hora abaixo 👇`],
+        reservation_confirmed: [`🎉 **Excelente!** Sua reserva foi agendada com sucesso. Te esperamos!`],
+        final: [`🎉 **Confirmado!** Seu pedido já está sendo preparado. Obrigado!`],
+        service: [`✨ **Nossos Serviços:**\n\n${businessInfo.description}\n\nGostaria de ver o Menu ou fazer uma Reserva?`],
+        info: [`📍 Localização: ${businessInfo.address}. ⏰ Horário: ${businessInfo.hours}.`],
+        thanks: [
+            "😊 O prazer é meu! Estou por aqui se precisar.",
+            "Por nada! Tenha um ótimo dia. ☕",
+            "Obrigado você pela visita! Volte logo. 👋",
+            "De nada! Estamos à disposição."
         ],
-        payment_handoff: [`✅ Perfeito! Para deixar tudo pronto e você **não esperar**, confirme o pagamento.\n\n💳 **Aceitamos:** ${activeMethods}.`],
-        final: [`🎉 **Confirmado!** 🚀\n\nJá avisei nossa equipe. Obrigado por escolher a **${businessInfo.name}**!`],
-        service: [`✨ Somos especialistas em **${businessInfo.type}**. Oferecemos: ${businessInfo.description}`],
-        info: [`📍 Estamos em: **${businessInfo.address}**.\n⏰ Horário: **${businessInfo.hours}**.`],
-        delivery_question: [`📝 Ótima escolha! 😋\n\nÉ **para viagem** 🥡 ou para **consumir aqui** 🍽️?`],
-        default: [`Entendi. Gostaria de ver o **Menu** ou nossa **Localização**?`]
+        default: [`Entendi. Gostaria de ver o **Menu**, fazer uma **Reserva** ou ver a **Localização**?`]
       }
     };
 
     const langParams = responses[selectedLanguage] || responses.es;
 
-    // --- CEREBRO DE LA CONVERSACIÓN (LOGICA CORREGIDA) ---
+    // --- CEREBRO: JERARQUÍA DE DECISIONES ---
 
-    // A. CIERRE FINAL (Pagos o Confirmación de Reserva)
-    if (msg.includes('tarjeta') || msg.includes('card') || msg.includes('pix') || msg.includes('efectivo') || 
-        msg.includes('cash') || msg.includes('dinheiro') || msg.includes('paypal') || 
-        msg.includes('personas') || msg.includes('people') || msg.includes('pessoas') || msg.includes('pm') || msg.includes('am') || msg.includes(':')) {
-        return pick(langParams.final); 
-    }
-
-    // B. RESERVAS (¡PRIORIDAD ALTA!)
-    if (msg.includes('reserv') || msg.includes('book') || msg.includes('mesa') || msg.includes('table') || msg.includes('cita') || msg.includes('agendar')) {
-       return pick(langParams.reservation);
-    }
-
-    // C. LOGÍSTICA DE PEDIDOS (Para llevar / Comer aquí)
-    // Solo entramos aquí si el usuario responde a la pregunta logística
-    if (msg.includes('llevar') || msg.includes('aqui') || msg.includes('aquí') || 
-        msg.includes('to go') || msg.includes('eat in') || msg.includes('pickup') || 
-        msg.includes('viagem') || msg.includes('consumir')) {
+    // 1. CONFIRMACIÓN DE PEDIDO (Botón verde)
+    if (msg.includes('he seleccionado') || msg.includes('total estimado') || msg.includes('cómo procedemos') || msg.includes('selected') || msg.includes('total estimated') || msg.includes('selecionei') || msg.includes('total estimado')) {
         return pick(langParams.payment_handoff);
     }
+    
+    // 2. CONFIRMACIÓN DE RESERVA (FORMATO ELEGANTE: "Martes, 20 de Enero")
+    if (msg.includes('quiero reservar para') || msg.includes('reservation for') || msg.includes('agendar para')) {
+        const parts = msg.match(/(?:para|for) (.*?) (?:a las|at|às) (.*)/i);
+        
+        if (parts && parts.length === 3) {
+           let dateStr = parts[1].replace('el ', '').replace('the ', '').replace('o ', '').trim();
+           const time = parts[2].replace('.', '').trim();
 
-    // D. PEDIDOS DE COMIDA ESPECÍFICOS (El usuario menciona un producto)
-    // Ejemplo: "Quiero un café" -> Bot: "¿Para llevar?"
-    if (productMatch) { 
-        return pick(langParams.delivery_question);
+           // MAGIA: Convertimos "20/1/2026" a "Martes, 20 de enero"
+           try {
+             if (dateStr.includes('/')) {
+               const [day, month, year] = dateStr.split('/');
+               const dateObj = new Date(year, month - 1, day);
+               if (!isNaN(dateObj)) {
+                 const locale = selectedLanguage === 'es' ? 'es-ES' : selectedLanguage === 'pt' ? 'pt-BR' : 'en-US';
+                 dateStr = dateObj.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+                 dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+               }
+             }
+           } catch (e) {}
+
+           if (selectedLanguage === 'es') return `🎉 **¡Excelente!** Tu reserva ha sido registrada correctamente.\n\nTe esperamos el **${dateStr}** a las **${time}**.`;
+           if (selectedLanguage === 'pt') return `🎉 **Excelente!** Sua reserva foi agendada com sucesso.\n\nTe esperamos **${dateStr}** às **${time}**.`;
+           return `🎉 **Awesome!** Your reservation has been successfully booked for **${dateStr}** at **${time}**. See you soon!`;
+        }
+        return pick(langParams.reservation_confirmed); 
     }
 
-    // E. INTENCIÓN GENERAL (El usuario dice "Quiero pedir" pero NO dice qué)
-    // Ejemplo: "Quiero hacer un pedido" -> Bot: "Aquí está el menú"
-    if (msg.includes('quiero') || msg.includes('dame') || msg.includes('ordenar') || msg.includes('pedir') || 
-        msg.includes('want') || msg.includes('order')) { 
+    // 3. SOLICITUD DE RESERVA (Abre Calendario)
+    if (msg.includes('reserva') || msg.includes('cita') || msg.includes('booking') || msg.includes('agend') || msg.includes('mesa') || msg.includes('table') || msg.includes('appointment')) {
+        setShowCalendar(true);
+        return pick(langParams.reservation);
+    }
+
+    // 4. PAGOS
+    if (msg.includes('tarjeta') || msg.includes('card') || msg.includes('pix') || msg.includes('efectivo') || msg.includes('cash') || msg.includes('credito') || msg.includes('crédito') || msg.includes('debito') || msg.includes('débito') || msg.includes('credit') || msg.includes('debit') || msg.includes('dinheiro')) {
+        return pick(langParams.final);
+    }
+
+    // 5. CONSULTA DE SERVICIOS (Texto solamente)
+    if (msg.includes('servicio') || msg.includes('ofrecen') || msg.includes('haces') || 
+        msg.includes('service') || msg.includes('offer') || msg.includes('serviço') || msg.includes('fazer')) {
+        return pick(langParams.service);
+    }
+
+    // 6. SOLICITUD DE MENÚ (Abre Catálogo)
+    if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta') || 
+        msg.includes('catalogo') || msg.includes('catálogo') || 
+        msg.includes('precio') || msg.includes('productos') || 
+        msg.includes('price') || msg.includes('products') || 
+        msg.includes('preço') || 
+        msg.includes('si') || msg.includes('sí') || msg.includes('yes') || msg.includes('claro') || msg.includes('sim')) {
+        
+        setShowMenuUI(true);
         return pick(langParams.menu);
     }
 
-    // F. RESTO DE OPCIONES
-    if (msg.includes('menu') || msg.includes('menú') || msg.includes('carta') || msg.includes('precio') || msg.includes('cost')) return pick(langParams.menu);
-    if (msg === 'si' || msg === 'sí' || msg.includes('claro') || msg.includes('yes')) return pick(langParams.menu);
-    if (msg.includes('servicio') || msg.includes('haces')) return pick(langParams.service);
-    if (msg.includes('hora') || msg.includes('ubic') || msg.includes('dond')) return pick(langParams.info);
-    if (msg.includes('hola') || msg.includes('buen') || msg.includes('hi')) return pick(langParams.greeting);
+    // 7. AGRADECIMIENTOS (¡NUEVO!) 😊
+    if (msg.includes('gracias') || msg.includes('thank') || msg.includes('obrigad') || msg.includes('valeu')) {
+        return pick(langParams.thanks);
+    }
 
-    if (msg.includes('gracias') || msg.includes('thank') || msg.includes('obrigad')) {
-        return selectedLanguage === 'es' ? "¡De nada! 🤖" : "You're welcome! 🤖";
+    // 8. SALUDOS
+    if (msg.includes('hola') || msg.includes('buen') || msg.includes('hi') || msg.includes('olá') || msg.includes('ola') || msg.includes('tarde') || msg.includes('noite') || msg.includes('dia') || msg.includes('morning') || msg.includes('evening')) {
+        return pick(langParams.greeting);
+    }
+
+    // 9. CONSULTAS GENERALES
+    if (msg.includes('hora') || msg.includes('ubic') || msg.includes('dond') || msg.includes('loca') || msg.includes('where')) return pick(langParams.info);
+
+    // 10. INTENCIÓN DE COMPRA DIRECTA
+    const productMatch = products.find(p => msg.includes(p.name.toLowerCase()));
+    if (msg.includes('quiero') || msg.includes('dame') || msg.includes('ordenar') || productMatch || msg.includes('llevar') || msg.includes('aqui') || msg.includes('want') || msg.includes('order') || msg.includes('quero')) {
+        setShowMenuUI(true);
+        return pick(langParams.menu);
     }
 
     return pick(langParams.default);
   };
 
-  const handleSend = async (imageAttached = false) => {
-    if (!input.trim() && !imageAttached) return;
-    
+  const handleSend = async (overrideMessage = null) => {
+    // Si viene texto del menú, úsalo. Si no, usa el input normal.
+    const textToSend = typeof overrideMessage === 'string' ? overrideMessage : input;
+
+    // Validación: Si no hay texto ni imagen, no hacer nada
+    if (!textToSend?.trim() && !uploadedImage && typeof overrideMessage !== 'boolean') return;
+
+    const isImageUpload = typeof overrideMessage === 'boolean' && overrideMessage;
+
     const userMessage = { 
       role: 'user', 
-      content: input,
+      content: textToSend,
       timestamp: new Date().toISOString(),
-      hasImage: imageAttached,
-      image: imageAttached ? uploadedImage : null
+      hasImage: isImageUpload,
+      image: isImageUpload ? uploadedImage : null
     };
     
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput('');
-    setUploadedImage(null);
+    if (!isImageUpload) setUploadedImage(null);
     setIsTyping(true);
 
-    const newStats = {
-      ...stats,
-      totalChats: stats.totalChats + 1,
-      todayChats: stats.todayChats + 1
-    };
+    const newStats = { ...stats, totalChats: stats.totalChats + 1, todayChats: stats.todayChats + 1 };
     setStats(newStats);
 
     setTimeout(async () => {
       const aiResponse = {
         role: 'assistant',
-        content: await generateAIResponse(input, imageAttached),
+        content: await generateAIResponse(textToSend, isImageUpload),
         timestamp: new Date().toISOString()
       };
       
-      const finalMessages = [...updatedMessages, aiResponse];
-      setMessages(finalMessages);
+      setMessages([...updatedMessages, aiResponse]);
       setIsTyping(false);
-
+      
       if (voiceEnabled && 'speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(aiResponse.content);
         utterance.lang = selectedLanguage === 'es' ? 'es-ES' : selectedLanguage === 'pt' ? 'pt-BR' : 'en-US';
@@ -1207,6 +1312,146 @@ app.post('/whatsapp-webhook', async (req, res) => {
                       </div>
                     </div>
                   )}
+
+                  {/* --- CATÁLOGO INTERACTIVO VISUAL --- */}
+                  {showMenuUI && (
+                    <div className="mt-4 mb-4 bg-slate-900/95 rounded-2xl border border-cyan-500/50 shadow-2xl backdrop-blur-md overflow-hidden animate-fade-in-up mx-2 z-50 relative">
+                      {/* Encabezado */}
+                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 border-b border-white/10 flex justify-between items-center">
+                        <div>
+                          <h3 className="text-lg font-bold text-white flex items-center gap-2">📋 Catálogo Disponible</h3>
+                          <p className="text-xs text-cyan-400">Selecciona lo que deseas ordenar</p>
+                        </div>
+                        <button onClick={() => setShowMenuUI(false)} className="bg-white/10 w-8 h-8 rounded-full text-white">✕</button>
+                      </div>
+
+                      {/* Lista de Productos */}
+                      <div className="p-2 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {products.map((product) => {
+                          const qty = cart[product.name] || 0;
+                          return (
+                            <div key={product.name} className="flex bg-white/5 p-3 rounded-xl border border-white/5 hover:border-cyan-500/30 transition group">
+                              {/* Foto */}
+                              <div className="w-20 h-20 bg-slate-800 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
+                                {product.image ? (
+                                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                ) : ( <div className="w-full h-full flex items-center justify-center text-2xl">📦</div> )}
+                              </div>
+                              {/* Info */}
+                              <div className="flex-1 px-3 flex flex-col justify-center">
+                                <h4 className="font-bold text-white text-base">{product.name}</h4>
+                                <p className="text-xs text-slate-400 mt-1 line-clamp-2">{product.description || 'Sin descripción.'}</p>
+                                <p className="text-cyan-300 font-bold mt-1">${product.price}</p>
+                              </div>
+                             {/* Botones Verticales (+ Arriba, - Abajo) */}
+                              {/* Botones Verticales */}
+                              <div className="flex flex-col items-center justify-center gap-1 pl-2 border-l border-white/10">
+                                <button 
+                                  onClick={() => setCart({...cart, [product.name]: qty + 1})} 
+                                  className="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-green-500/20 text-green-400 rounded-full font-bold transition"
+                                >
+                                  +
+                                </button>
+                                <span className="text-sm font-bold text-white w-6 text-center py-1">
+                                  {qty}
+                                </span>
+                                <button 
+                                  onClick={() => { const newQty = Math.max(0, qty - 1); setCart({...cart, [product.name]: newQty}); }} 
+                                  className="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-cyan-500/20 text-cyan-400 rounded-full font-bold transition"
+                                >
+                                  -
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Total y Confirmar */}
+                      <div className="p-4 bg-slate-900 border-t border-white/10">
+                        <div className="flex justify-between items-end mb-4">
+                          <span className="text-slate-400 text-sm">Total Estimado:</span>
+                          <span className="text-2xl font-bold text-white">
+                            ${products.reduce((acc, p) => acc + (p.price * (cart[p.name] || 0)), 0).toFixed(2)}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const items = Object.entries(cart).filter(([_, q]) => q > 0).map(([name, q]) => `${q}x ${name}`).join(', ');
+                            if (!items) return;
+                            const total = products.reduce((acc, p) => acc + (p.price * (cart[p.name] || 0)), 0).toFixed(2);
+                            const orderText = `Hola, he seleccionado: ${items}. Total estimado: $${total}. ¿Cómo procedemos?`;
+                            handleSend(orderText);
+                            setShowMenuUI(false);
+                            setCart({});
+                          }}
+                          disabled={Object.values(cart).reduce((a, b) => a + b, 0) === 0}
+                          className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition flex justify-center items-center gap-2"
+                        >
+                          ✅ Confirmar Selección
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- CALENDARIO DE RESERVAS (MULTILINGÜE) --- */}
+                  {showCalendar && (
+                    <div className="mt-4 mb-4 bg-slate-900/95 rounded-2xl border border-purple-500/50 shadow-2xl backdrop-blur-md overflow-hidden animate-fade-in-up mx-2 z-50 relative">
+                      <div className="bg-gradient-to-r from-purple-900 to-slate-900 p-4 border-b border-white/10 flex justify-between items-center">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">{t.calendarTitle}</h3>
+                        <button onClick={() => setShowCalendar(false)} className="bg-white/10 w-8 h-8 rounded-full text-white">✕</button>
+                      </div>
+                      
+                      <div className="p-4">
+                        <p className="text-purple-300 text-sm mb-3">{t.selectDate}</p>
+                        {/* Días del mes */}
+                        <div className="grid grid-cols-7 gap-2 mb-4">
+                          {[...Array(14)].map((_, i) => {
+                            const d = new Date();
+                            d.setDate(d.getDate() + i);
+                            // Detectamos idioma para la fecha
+                            const locale = selectedLanguage === 'es' ? 'es-ES' : selectedLanguage === 'pt' ? 'pt-BR' : 'en-US';
+                            return (
+                              <button 
+                                key={i}
+                                className="p-2 rounded-lg bg-white/5 hover:bg-purple-500/30 border border-white/10 flex flex-col items-center text-xs transition"
+                              >
+                                <span className="text-slate-400 capitalize">{d.toLocaleDateString(locale, {weekday: 'short'})}</span>
+                                <span className="text-white font-bold text-lg">{d.getDate()}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <p className="text-purple-300 text-sm mb-3">{t.selectTime}</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['09:00', '10:00', '11:00', '13:00', '15:00', '16:30', '18:00', '19:30'].map(time => (
+                            <button
+                              key={time}
+                              onClick={() => {
+                                const d = new Date();
+                                const locale = selectedLanguage === 'es' ? 'es-ES' : selectedLanguage === 'pt' ? 'pt-BR' : 'en-US';
+                                const fechaStr = d.toLocaleDateString(locale);
+                                
+                                // Mensaje de confirmación en el idioma correcto
+                                let confirmMsg = '';
+                                if (selectedLanguage === 'es') confirmMsg = `Hola, quiero reservar para el ${fechaStr} a las ${time}.`;
+                                else if (selectedLanguage === 'pt') confirmMsg = `Olá, quero agendar para ${fechaStr} às ${time}.`;
+                                else confirmMsg = `Hello, I want a reservation for ${fechaStr} at ${time}.`;
+
+                                handleSend(confirmMsg);
+                                setShowCalendar(false);
+                              }}
+                              className="py-2 px-3 rounded-lg bg-white/5 border border-purple-500/30 text-white hover:bg-purple-500 hover:text-white transition text-sm font-medium"
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -1329,7 +1574,7 @@ app.post('/whatsapp-webhook', async (req, res) => {
                     />
                   </div>
 
-                 {/* SELECTOR DE TIPO DE NEGOCIO MEJORADO */}
+                 {/* SELECTOR DE TIPO DE NEGOCIO MEJORADO (TRADUCIDO) */}
                   <div>
                     <label className="block text-sm font-semibold text-cyan-300 mb-2">
                       {t.businessType} *
@@ -1339,75 +1584,84 @@ app.post('/whatsapp-webhook', async (req, res) => {
                         value={businessTypes.some(t => t.value === businessInfo.type) ? businessInfo.type : 'custom'}
                         onChange={(e) => {
                           const val = e.target.value;
+                          const selectedType = businessTypes.find(t => t.value === val);
+                          
                           if (val === 'custom') {
-                            setBusinessInfo({...businessInfo, type: ''}); // Limpia para que escriba
+                            setBusinessInfo({...businessInfo, type: ''}); 
                           } else {
-                            setBusinessInfo({...businessInfo, type: val});
+                            setBusinessInfo({
+                              ...businessInfo, 
+                              type: val, 
+                              logo: selectedType ? selectedType.emoji : '🏢'
+                            });
                           }
                         }}
                         className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition appearance-none cursor-pointer"
                       >
-                        <option value="" disabled className="bg-slate-900">Selecciona una industria...</option>
+                        <option value="" disabled className="bg-slate-900">{t.selectIndustry}</option>
                         {businessTypes.map(type => (
                           <option key={type.id} value={type.value} className="bg-slate-900">
                             {type.label}
                           </option>
                         ))}
-                        <option value="custom" className="bg-slate-900">✨ Otro (Escribir manual)</option>
+                        <option value="custom" className="bg-slate-900">{t.otherIndustry}</option>
                       </select>
-                      {/* Flechita del select */}
+                      
                       <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-cyan-400">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                       </div>
                     </div>
                     
-                    {/* Si elige "Otro" o no está en la lista, muestra el input manual */}
                     {(!businessTypes.some(t => t.value === businessInfo.type) && businessInfo.type !== '') || businessInfo.type === '' ? (
                       <input
                         type="text"
                         value={businessInfo.type}
                         onChange={(e) => setBusinessInfo({...businessInfo, type: e.target.value})}
-                        placeholder="Escribe tu tipo de negocio (ej. Tienda de Zapatos)"
+                        placeholder={t.typeManualPlaceholder}
                         className="mt-3 w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition animate-fade-in"
                       />
                     ) : null}
                   </div>
                 </div>
 
+                {/* LOGO INTELIGENTE (TRADUCIDO) */}
                 <div>
                   <label className="block text-sm font-semibold text-cyan-300 mb-2">
                     {t.businessLogo}
                   </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <input
-                        type="text"
-                        value={businessInfo.logo}
-                        onChange={(e) => setBusinessInfo({...businessInfo, logo: e.target.value})}
-                        placeholder="Emoji: ☕"
-                        className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={businessInfo.logo}
-                        onChange={(e) => setBusinessInfo({...businessInfo, logo: e.target.value})}
-                        placeholder="URL: https://..."
-                        className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 backdrop-blur-sm transition"
-                      />
-                    </div>
-                  </div>
-                  {businessInfo.logo && (
-                    <div className="mt-3 flex items-center gap-3 p-3 bg-white/5 border border-cyan-500/20 rounded-xl">
-                      {businessInfo.logo.startsWith('http') ? (
-                        <img src={businessInfo.logo} alt="logo" className="w-12 h-12 object-cover rounded-lg" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-slate-800 border border-cyan-500/30 flex items-center justify-center overflow-hidden relative group">
+                      {businessInfo.logo && (businessInfo.logo.includes('data:image') || businessInfo.logo.includes('http')) ? (
+                        <img src={businessInfo.logo} alt="Logo" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-4xl">{businessInfo.logo}</span>
+                        <span className="text-3xl select-none animate-bounce-slow">
+                          {businessInfo.logo || '🏢'}
+                        </span>
                       )}
-                      <span className="text-cyan-300 text-sm">Vista previa</span>
+
+                      {businessInfo.logo && (
+                         <button 
+                           onClick={() => setBusinessInfo({...businessInfo, logo: ''})}
+                           className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs text-red-400 font-bold"
+                         >{t.remove}</button>
+                      )}
                     </div>
-                  )}
+
+                    <label className="cursor-pointer bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg transition text-sm font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                      <ImagePlus className="w-4 h-4" />
+                      <span>{t.uploadLogo}</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, (img) => setBusinessInfo({...businessInfo, logo: img}))} 
+                      />
+                    </label>
+                    
+                    <p className="text-xs text-slate-500 max-w-[150px]">
+                      {t.ifNoPhoto}
+                    </p>
+                  </div>
                 </div>
 
                 <div>
@@ -1505,36 +1759,51 @@ app.post('/whatsapp-webhook', async (req, res) => {
                 <div className="border-t border-cyan-500/20 pt-6 mt-6">
                   <h3 className="text-xl font-bold text-white mb-4">{t.productsServices}</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input
-                      type="text"
-                      value={newProduct.name}
-                      onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                      placeholder={t.productName}
-                      className="bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <input
-                      type="text"
-                      value={newProduct.price}
-                      onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                      placeholder={t.productPrice}
-                      className="bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <input
-                      type="text"
-                      value={newProduct.category}
-                      onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                      placeholder={t.productCategory}
-                      className="bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <input
-                      type="text"
-                      value={newProduct.image}
-                      onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
-                      placeholder={t.productImage}
-                      className="bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-white placeholder-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                  </div>
+                  {/* FORMULARIO DE PRODUCTO MEJORADO (TRADUCIDO) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <input
+                        type="text"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                        placeholder={t.productNamePlaceholder} 
+                        className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-cyan-400/50"
+                      />
+                      <input
+                        type="number"
+                        value={newProduct.price}
+                        onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                        placeholder={t.productPricePlaceholder}
+                        className="w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-cyan-400/50"
+                      />
+                      
+                      {/* Descripción Traducida */}
+                      <textarea
+                        value={newProduct.description || ''}
+                        onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                        placeholder={t.productDescriptionPlaceholder}
+                        className="col-span-2 w-full bg-white/5 border border-cyan-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 h-20 resize-none placeholder-cyan-400/50"
+                      />
+
+                      {/* Subir Imagen Local Traducido */}
+                      <div className="col-span-2 flex items-center gap-4 bg-white/5 p-3 rounded-xl border border-cyan-500/30">
+                        <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center overflow-hidden border border-white/10">
+                          {newProduct.image ? (
+                            <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xl">📸</span>
+                          )}
+                        </div>
+                        <label className="cursor-pointer text-cyan-400 hover:text-cyan-300 font-bold text-sm flex items-center gap-2">
+                          <span>{t.uploadPhoto}</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden"
+                            onChange={(e) => handleFileUpload(e, (img) => setNewProduct({...newProduct, image: img}))} 
+                          />
+                        </label>
+                      </div>
+                    </div>
                   
                   <button
                     onClick={addProduct}
@@ -1746,34 +2015,34 @@ app.post('/whatsapp-webhook', async (req, res) => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{t.paymentProcessing}</h3>
-                    <p className="text-cyan-300/70 text-sm">Múltiples métodos de pago disponibles</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { key: 'pixEnabled', label: 'Pix (Brasil)', icon: '💠' },
-                    { key: 'creditCardEnabled', label: 'Crédito', icon: '💳' },
-                    { key: 'debitCardEnabled', label: 'Débito', icon: '💳' },
-                    { key: 'cashEnabled', label: 'Efectivo', icon: '💵' },
-                    { key: 'stripeEnabled', label: 'Stripe', icon: 'S' },
-                    { key: 'mercadoPagoEnabled', label: 'MercadoPago', icon: 'M' },
-                    { key: 'paypalEnabled', label: 'PayPal', icon: 'P' }
-                  ].map((payment) => (
-                    <button
-                      key={payment.key}
-                      onClick={() => setPaymentInfo({...paymentInfo, [payment.key]: !paymentInfo[payment.key]})}
-                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg transition text-sm font-medium border ${
-                        paymentInfo[payment.key]
-                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/50 text-green-300'
-                          : 'bg-white/5 border-cyan-500/20 text-cyan-400/60 hover:bg-white/10 hover:border-cyan-500/30'
-                      }`}
-                    >
-                      <span className="text-lg">{payment.icon}</span>
-                      <span>{payment.label}</span>
-                      {paymentInfo[payment.key] && <Check className="w-4 h-4 ml-auto text-green-400" />}
-                    </button>
-                  ))}
-                </div>
+                    <p className="text-cyan-300/70 text-sm">{t.paymentMethodsAvailable}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { key: 'pixEnabled', label: t.payPix, icon: '💠' },
+                { key: 'creditCardEnabled', label: t.payCredit, icon: '💳' },
+                { key: 'debitCardEnabled', label: t.payDebit, icon: '💳' },
+                { key: 'cashEnabled', label: t.payCash, icon: '💵' },
+                { key: 'stripeEnabled', label: t.payStripe, icon: 'S' },
+                { key: 'mercadoPagoEnabled', label: t.payMP, icon: 'M' },
+                { key: 'paypalEnabled', label: t.payPaypal, icon: 'P' }
+              ].map((payment) => (
+                <button
+                  key={payment.key}
+                  onClick={() => setPaymentInfo({...paymentInfo, [payment.key]: !paymentInfo[payment.key]})}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg transition text-sm font-medium border ${
+                    paymentInfo[payment.key]
+                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/50 text-green-300'
+                      : 'bg-white/5 border-cyan-500/20 text-cyan-400/60 hover:bg-white/10 hover:border-cyan-500/30'
+                  }`}
+                >
+                  <span className="text-lg">{payment.icon}</span>
+                  <span>{payment.label}</span>
+                  {paymentInfo[payment.key] && <Check className="w-4 h-4 ml-auto text-green-400" />}
+                </button>
+              ))}
+            </div>
               </div>
 
               {/* Multi-language */}
@@ -1784,7 +2053,7 @@ app.post('/whatsapp-webhook', async (req, res) => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{t.multiLanguageSupport}</h3>
-                    <p className="text-cyan-300/70 text-sm">Selecciona los idiomas que deseas activar</p>
+                    <p className="text-cyan-300/70 text-sm">{t.selectLanguages}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
