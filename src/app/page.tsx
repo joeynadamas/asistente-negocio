@@ -1,10 +1,596 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Sparkles, Settings, BarChart3, Zap, Menu, X, Bot, User, Check, Copy, Mic, Volume2, VolumeX, ImagePlus, Palette, Globe, CreditCard, Code, TrendingUp, Clock, Users, MessageSquare, DollarSign, Download, Phone, Home } from 'lucide-react';
+import { MessageCircle, Send, Sparkles, Settings, BarChart3, Zap, Menu, X, Bot, User, Check, Copy, Mic, Volume2, VolumeX, ImagePlus, ArrowRight, LogOut, Palette, Globe, CreditCard, Code, TrendingUp, Clock, Users, MessageSquare, DollarSign, Download, Phone, Home } from 'lucide-react';
 import { storage } from '@/lib/storage';
 
-export default function AIBusinessAssistantPro() {
+// --- PEGAR DESDE AQUÍ (BLOQUE DE COMPONENTES NUEVOS) ---
+
+// Componente simple para mostrar estrellas
+const StarRating = () => (
+  <div className="flex gap-1 mb-2">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <div key={star} className="w-4 h-4 text-yellow-400 fill-current">★</div>
+    ))}
+  </div>
+);
+
+// Componente: Landing Page (Portada + Testimonios)
+// Componente: Landing Page (Premium + Multi-idioma)
+const LandingPage = ({ t, selectedLanguage, onLanguageChange, onStart, onLogin, onDemo }) => {
+  const LangBtn = ({ code, label }) => (
+    <button
+      onClick={() => onLanguageChange(code)}
+      className={`px-2.5 py-1 rounded-lg border text-xs font-semibold transition ${
+        selectedLanguage === code
+          ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200'
+          : 'bg-white/5 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-100 overflow-x-hidden relative">
+      {/* Fondo glow premium */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-cyan-500/10 blur-3xl rounded-full" />
+        <div className="absolute top-1/3 -right-24 w-[520px] h-[520px] bg-blue-500/10 blur-3xl rounded-full" />
+        <div className="absolute bottom-0 left-1/3 w-[520px] h-[520px] bg-purple-500/10 blur-3xl rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.12),transparent_55%)]" />
+      </div>
+
+      {/* Navbar */}
+      <nav className="relative max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 blur-lg opacity-60 rounded-xl" />
+            <div className="relative bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-xl border border-white/10">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <div className="leading-tight">
+            <div className="text-lg font-bold text-white">Aura AI</div>
+            <div className="text-xs text-slate-400">Your Digital Employee</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <LangBtn code="es" label="ES" />
+            <LangBtn code="en" label="EN" />
+            <LangBtn code="pt" label="PT" />
+          </div>
+
+          <button
+            onClick={onLogin}
+            className="hidden md:inline-flex px-4 py-2 rounded-xl bg-white/5 border border-slate-800 hover:border-slate-700 hover:bg-white/10 transition text-sm font-semibold"
+          >
+            {t.landingFinalCtaPrimary /* reutilizamos texto, o cambia luego si quieres */}
+          </button>
+
+          <button
+            onClick={onDemo}
+            className="inline-flex px-4 py-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-900 transition text-sm font-semibold"
+          >
+            {t.landingCtaSecondary}
+          </button>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <header className="relative max-w-7xl mx-auto px-6 pt-10 pb-14 md:pt-16 md:pb-20 grid md:grid-cols-2 gap-10 items-center">
+        <div className="space-y-7">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-slate-800 text-xs text-slate-300">
+            <span className="text-cyan-300">●</span> {t.landingWhySubtitle}
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.02] text-white">
+  {t.landingHeroTitle}
+</h1>
+
+          <p className="text-lg md:text-xl text-slate-300/80 max-w-xl leading-relaxed">
+            {t.landingHeroSubtitle}
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <button
+              onClick={onStart}
+              className="px-8 py-4 rounded-2xl font-bold text-lg text-white
+                         bg-gradient-to-r from-blue-600 to-cyan-500
+                         hover:from-blue-500 hover:to-cyan-400 transition
+                         shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+            >
+              {t.landingCtaPrimary} <ArrowRight className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={onDemo}
+              className="px-8 py-4 rounded-2xl font-bold text-lg text-white
+                         bg-white/5 hover:bg-white/10 transition
+                         border border-slate-800 flex items-center justify-center"
+            >
+              {t.landingCtaSecondary}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4 text-sm text-slate-400 pt-3">
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full bg-slate-900 border-2 border-slate-950"
+                />
+              ))}
+            </div>
+            <p>{t.trustLine ?? "+500 negocios confían en Aura"}</p>
+          </div>
+        </div>
+
+        {/* Visual premium: Aura en acción (chat mockup) */}
+{/* Visual premium: Aura en acción (chat mockup) */}
+{/* MOCK / CHAT CARD (Premium) */}
+{/* MOCK / CHAT (Premium) */}
+<div className="relative hidden md:block">
+  <div className="absolute -inset-6 bg-cyan-500/20 blur-3xl rounded-full" />
+
+  <div className="relative bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur overflow-hidden">
+    <div className="h-80 min-h-0 rounded-2xl bg-gradient-to-br from-slate-800/70 to-slate-950/60 flex flex-col p-6 border border-white/5">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="text-slate-300 text-sm font-semibold">
+          {t.landingMockHeader}
+        </div>
+        <div className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">
+          Online
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="aura-scroll space-y-3 flex flex-col mt-4 flex-1 min-h-0 overflow-y-auto pr-2">
+        {/* Aura */}
+        <div className="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 max-w-xs">
+          {t.landingMockA1}
+        </div>
+
+        {/* Cliente */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-sm text-white/90 max-w-xs self-end shadow-xl shadow-black/20">
+          {t.landingMockU1}
+        </div>
+
+        {/* Aura (menú) */}
+        <div className="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 max-w-xs">
+          {t.landingMockA2}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="rounded-xl bg-white/5 border border-white/10 p-2">
+              <p className="text-xs text-slate-200 font-semibold truncate">{t.landingMockItem1}</p>
+              <p className="text-[11px] text-slate-400">$4.90</p>
+            </div>
+            <div className="rounded-xl bg-white/5 border border-white/10 p-2">
+              <p className="text-xs text-slate-200 font-semibold truncate">{t.landingMockItem2}</p>
+              <p className="text-[11px] text-slate-400">$3.50</p>
+            </div>
+            <div className="rounded-xl bg-white/5 border border-white/10 p-2">
+              <p className="text-xs text-slate-200 font-semibold truncate">{t.landingMockItem3}</p>
+              <p className="text-[11px] text-slate-400">$6.20</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Cliente (pregunta USDT) */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-sm text-white/90 max-w-xs self-end shadow-xl shadow-black/20">
+          {t.landingMockU2}
+        </div>
+
+        {/* Aura (respuesta USDT) */}
+        <div className="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 max-w-xs">
+          {t.landingMockA3}
+        </div>
+
+        {/* Typing */}
+        <div className="text-xs text-slate-500 flex items-center gap-2 pt-1">
+          <span className="inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.2s]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.1s]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" />
+          </span>
+          <span>Aura {t.typing}</span>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-4">
+        <div className="text-xs text-slate-500">
+          {t.landingMockFooter}
+        </div>
+
+        {/* Ventas hoy (si luego quieres traducirlo, lo hacemos con t también) */}
+        <div className="bg-slate-900/70 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 flex items-center gap-2">
+          <span className="text-green-400">●</span>
+          {t.landingSalesToday}: <span className="font-bold text-white">+$1,250.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+      </header>
+
+      {/* WHY AURA */}
+      <section className="relative max-w-7xl mx-auto px-6 py-18 md:py-20 border-t border-slate-800/50">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+            {t.landingWhyTitle}
+          </h2>
+          <p className="text-slate-400 mt-3">{t.landingWhySubtitle}</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { icon: MessageSquare, title: t.landingWhy1Title, desc: t.landingWhy1Desc },
+            { icon: Globe, title: t.landingWhy2Title, desc: t.landingWhy2Desc },
+            { icon: Zap, title: t.landingWhy3Title, desc: t.landingWhy3Desc },
+            { icon: CreditCard, title: t.landingWhy4Title, desc: t.landingWhy4Desc },
+            { icon: Sparkles, title: t.landingWhy5Title, desc: t.landingWhy5Desc },
+            { icon: Phone, title: t.landingWhy6Title, desc: t.landingWhy6Desc },
+          ].map((f, i) => (
+            <div
+              key={i}
+              className="bg-slate-900/40 p-7 rounded-3xl border border-slate-800/70 hover:border-cyan-500/25 transition group"
+            >
+              <div className="bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-slate-800 group-hover:border-cyan-500/25 transition">
+                <f.icon className="w-6 h-6 text-cyan-300" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
+              <p className="text-slate-400 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      
+      {/* INDUSTRIES (SEO + Premium) */}
+<section className="relative max-w-7xl mx-auto px-6 py-20 border-y border-slate-800/50">
+  <div className="text-center max-w-2xl mx-auto mb-12">
+    <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+      {t.landingIndustriesTitle}
+    </h2>
+    <p className="text-slate-400 mt-3">{t.landingIndustriesSubtitle}</p>
+  </div>
+
+  <div className="grid md:grid-cols-2 gap-6">
+    {[
+      {
+        icon: "🍽️",
+        title: t.landingIndustry1Title,
+        desc: t.landingIndustry1Desc,
+      },
+      {
+        icon: "✨",
+        title: t.landingIndustry2Title,
+        desc: t.landingIndustry2Desc,
+      },
+      {
+        icon: "🛍️",
+        title: t.landingIndustry3Title,
+        desc: t.landingIndustry3Desc,
+      },
+      {
+        icon: "💼",
+        title: t.landingIndustry4Title,
+        desc: t.landingIndustry4Desc,
+      },
+    ].map((item, i) => (
+      <div
+        key={i}
+        className="group relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/30 p-7 hover:bg-slate-900/45 transition"
+      >
+        {/* Glow suave premium */}
+        <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-cyan-500/10 blur-3xl rounded-full" />
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full" />
+        </div>
+
+        <div className="relative flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl">
+            {item.icon}
+          </div>
+
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-white">{item.title}</h3>
+            <p className="text-slate-400 mt-1 leading-relaxed">{item.desc}</p>
+
+            <button
+  onClick={onDemo}
+  className="mt-4 flex items-center gap-2 text-sm text-cyan-300/90 font-semibold hover:text-cyan-200 transition"
+>
+  <span>Ver ejemplos</span>
+  <ArrowRight className="w-4 h-4" />
+</button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+
+      {/* TESTIMONIALS */}
+      <section className="relative py-20 border-y border-slate-800/50 bg-slate-900/20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white">{t.landingTestimonialsTitle}</h2>
+            <p className="text-slate-400 mt-3">{t.landingTestimonialsSubtitle}</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { name: t.landingTesti1Name, role: t.landingTesti1Role, quote: t.landingTesti1Text },
+              { name: t.landingTesti2Name, role: t.landingTesti2Role, quote: t.landingTesti2Text },
+              { name: t.landingTesti3Name, role: t.landingTesti3Role, quote: t.landingTesti3Text },
+            ].map((ttm, i) => (
+              <div key={i} className="bg-slate-950/70 p-8 rounded-3xl border border-slate-800">
+                <StarRating />
+                <p className="text-slate-200/90 italic leading-relaxed">“{ttm.quote}”</p>
+                <div className="mt-6">
+                  <p className="font-bold text-cyan-300">{ttm.name}</p>
+                  <p className="text-xs text-slate-500">{ttm.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      
+      {/* FINAL CTA */}
+      <section className="relative py-16 border-t border-slate-800/50">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-gradient-to-r from-slate-900/70 to-slate-950/70 border border-slate-800 rounded-3xl p-10 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-extrabold text-white">{t.landingFinalCtaTitle}</h3>
+              <p className="text-slate-400 mt-2">{t.landingFinalCtaSubtitle}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onStart}
+                className="px-6 py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition"
+              >
+                {t.landingFinalCtaPrimary}
+              </button>
+              <button
+                onClick={onDemo}
+                className="px-6 py-3 rounded-2xl font-bold text-white bg-white/5 hover:bg-white/10 transition border border-slate-800"
+              >
+                {t.landingFinalCtaSecondary}
+              </button>
+            </div>
+          </div>
+          <style jsx global>{`
+  /* Scrollbar fino (Chrome/Edge/Safari) */
+  .aura-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+  .aura-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+  }
+  .aura-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    border: 2px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+  }
+  .aura-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border: 2px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+  }
+
+  /* Firefox */
+  .aura-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.20) rgba(255, 255, 255, 0.06);
+  }
+`}</style>
+
+        </div>
+      </section>
+
+      <footer className="relative py-10 text-center text-slate-600 text-sm">
+        <p>© 2026 Aura AI. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+};
+
+
+// Componente: Precios (Pricing)
+// Componente: Precios (Premium + Multi-idioma)
+const PricingSection = ({ t, selectedLanguage, onLanguageChange, onSelectPlan, onBack }) => {
+  const LangBtn = ({ code, label }) => (
+    <button
+      onClick={() => onLanguageChange(code)}
+      className={`px-2.5 py-1 rounded-lg border text-xs font-semibold transition ${
+        selectedLanguage === code
+          ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200'
+          : 'bg-white/5 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950 relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+  <div className="absolute -top-32 -left-32 w-[520px] h-[520px] bg-cyan-500/10 blur-3xl rounded-full" />
+  <div className="absolute top-1/4 -right-32 w-[640px] h-[640px] bg-blue-500/12 blur-3xl rounded-full" />
+  <div className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-indigo-500/10 blur-3xl rounded-full" />
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.10),transparent_55%)]" />
+</div>
+
+      <button
+        onClick={onBack}
+        className="absolute top-6 left-6 text-slate-400 hover:text-white flex items-center gap-2 z-10"
+      >
+        ← {t.backToWelcome ?? "Volver"}
+      </button>
+
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-14">
+        <div className="flex items-center justify-end gap-2 mb-8">
+          <LangBtn code="es" label="ES" />
+          <LangBtn code="en" label="EN" />
+          <LangBtn code="pt" label="PT" />
+        </div>
+
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-3">{t.landingPlansTitle}</h2>
+          <p className="text-slate-400">{t.landingPlansSubtitle}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Free */}
+          <div className="bg-slate-950/35 border border-white/10 rounded-3xl p-8 flex flex-col shadow-2xl shadow-black/20">
+            <div className="flex items-center justify-between">
+  <div>
+    <h3 className="text-2xl font-bold text-white">{t.landingPlanFreeTitle}</h3>
+    <p className="text-slate-400 text-sm">{t.landingPlanFreeDesc}</p>
+  </div>
+
+  <span className="-mt-10 px-3 py-1 rounded-full text-xs font-bold bg-green-500/15 border border-green-500/30 text-green-300">
+    {t.currentPlan ?? "Plan Actual"}
+  </span>
+</div>
+
+            <div className="mb-8">
+              <span className="text-5xl font-extrabold text-white">$0</span>
+              <span className="text-slate-500">/mo</span>
+            </div>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-center gap-3 text-slate-200">
+                <Check className="w-5 h-5 text-green-400" /> {t.landingPlanFreeFeat1}
+              </li>
+              <li className="flex items-center gap-3 text-slate-200">
+                <Check className="w-5 h-5 text-green-400" /> {t.landingPlanFreeFeat2}
+              </li>
+              <li className="flex items-center gap-3 text-slate-200">
+                <Check className="w-5 h-5 text-green-400" /> {t.landingPlanFreeFeat3}
+              </li>
+            </ul>
+
+            <button
+              onClick={() => onSelectPlan('free')}
+              className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition border border-slate-800"
+            >
+              {t.landingPlanFreeCta}
+            </button>
+          </div>
+
+          {/* Unlimited */}
+          <div className="group relative bg-slate-950/35 border border-blue-500/30 rounded-3xl p-8 flex flex-col shadow-2xl shadow-blue-900/20 transition hover:border-blue-400/60">
+          {/* Glow premium hover */}
+<div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition">
+  <div className="absolute -top-24 -right-24 w-72 h-72 bg-cyan-500/10 blur-3xl rounded-full" />
+  <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-blue-500/10 blur-3xl rounded-full" />
+</div>
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide text-white bg-white/10 border border-white/20 backdrop-blur-md shadow-md shadow-blue-500/10">
+  <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+    {t.landingPlanProBadge}
+  </span>
+</div>
+
+            <div className="relative mb-4">
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <span className="text-yellow-400">👑</span> {t.landingPlanProTitle}
+              </h3>
+              <p className="text-blue-200/70 text-sm">{t.landingPlanProDesc}</p>
+            </div>
+
+            <div className="mb-8">
+              <span className="text-5xl font-extrabold text-white">$49</span>
+              <span className="text-slate-500">/mo</span>
+            </div>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-center gap-3 text-white">
+  <span className="w-5 h-5 rounded-full border border-cyan-400/50 bg-cyan-500/10 flex items-center justify-center text-cyan-200 text-xs shadow-sm shadow-cyan-500/20">
+  ✓
+</span>
+  {t.landingPlanProFeat1}
+</li>
+              <li className="flex items-center gap-3 text-white">
+  <span className="w-5 h-5 rounded-full border border-cyan-400/50 bg-cyan-500/10 flex items-center justify-center text-cyan-200 text-xs shadow-sm shadow-cyan-500/20">
+  ✓
+</span>
+  {t.landingPlanProFeat2}
+</li>
+              <li className="flex items-center gap-3 text-white">
+  <span className="w-5 h-5 rounded-full border border-cyan-400/50 bg-cyan-500/10 flex items-center justify-center text-cyan-200 text-xs shadow-sm shadow-cyan-500/20">
+  ✓
+</span>
+  {t.landingPlanProFeat3}
+</li>
+            </ul>
+
+            <button
+  onClick={() => onSelectPlan('premium')}
+  className="relative overflow-hidden w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-2xl font-bold transition shadow-lg shadow-blue-500/25"
+>
+  <span className="relative z-10">{t.landingPlanProCta}</span>
+
+  {/* Shine premium */}
+  <span className="pointer-events-none absolute inset-0 opacity-0 hover:opacity-100 transition">
+    <span className="absolute -left-1/2 top-0 h-full w-1/2 bg-white/12 blur-xl rotate-12 translate-x-0 hover:translate-x-[220%] transition duration-700" />
+  </span>
+</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- FIN BLOQUE DE COMPONENTES ---
+  export default function AIBusinessAssistantPro() {
+  // Estados para controlar la Landing Page y Login
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'pricing', 'app'
+  const [userPlan, setUserPlan] = useState('free'); // 'free' o 'premium'
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Efecto para verificar si ya inició sesión antes (Persistencia "Simulada")
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('aura_auth');
+    if (savedAuth) {
+      const { plan } = JSON.parse(savedAuth);
+      setUserPlan(plan);
+      setIsAuthenticated(true);
+      setCurrentView('app'); // Ir directo a la app
+    }
+  }, []);
+
+  const handleLogin = (planType) => {
+    // Aquí simulamos el login exitoso
+    const authData = { loggedIn: true, plan: planType, date: new Date().toISOString() };
+    localStorage.setItem('aura_auth', JSON.stringify(authData));
+    setUserPlan(planType);
+    setIsAuthenticated(true);
+    setCurrentView('app');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('aura_auth');
+    setIsAuthenticated(false);
+    setCurrentView('landing');
+    // Opcional: Limpiar estados del negocio
+  };
+  // --- FIN DE LO NUEVO ---
+  // ... (el resto de tu código sigue igual)
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -153,7 +739,8 @@ export default function AIBusinessAssistantPro() {
       cashEnabled: true,
       paypalEnabled: false,
       stripeEnabled: false,
-      mercadoPagoEnabled: false
+      mercadoPagoEnabled: false,
+      cryptoUsdtEnable: false,
     });
 
     setIsConfigured(true);
@@ -258,7 +845,7 @@ O que você gostaria de consultar primeiro?`
     creditCardEnabled: false, // 💳 Crédito
     debitCardEnabled: false,  // 💳 Débito
     cashEnabled: true,        // 💵 Efectivo (Activo por defecto)
-    currency: 'USD',
+    cryptoUsdtEnable: false,
     testMode: true
   });
 
@@ -351,6 +938,7 @@ O que você gostaria de consultar primeiro?`
       payStripe: 'Stripe',
       payMP: 'MercadoPago',
       payPaypal: 'PayPal',
+      payUSDT: "USDT (Cripto)",
       multiLanguageSupport: 'Soporte Multi-idioma',
       selectLanguages: 'Selecciona los idiomas que deseas activar',
       readyToDeploy: 'Listo para Desplegar',
@@ -372,7 +960,100 @@ O que você gostaria de consultar primeiro?`
       proTipText: 'Configura tu negocio, prueba el chat y luego exporta a tu sitio web',
       calendarTitle: '📅 Agendar Cita',
       selectDate: 'Selecciona un día:',
-      selectTime: 'Horarios disponibles:'
+      selectTime: 'Horarios disponibles:',
+      landingLogin: 'Iniciar Sesión',
+
+      // Landing Premium
+landingHeroTitle: "Convierte chats en ventas con Aura",
+landingHeroSubtitle: "Asistente virtual para tu negocio: responde al instante, muestra tu catálogo, resuelve dudas y agenda citas 24/7. Experiencia premium, lista para WhatsApp y pagos.",
+landingCtaPrimary: "Crear mi Aura",
+landingCtaSecondary: "Ver demo en vivo",
+
+landingWhyTitle: "¿Por qué Aura?",
+landingWhySubtitle: "Una experiencia premium que vende, atiende y agenda sin esfuerzo.",
+
+landingWhy1Title: "Responde en segundos",
+landingWhy1Desc: "Evita perder clientes: Aura contesta al instante 24/7.",
+landingWhy2Title: "Multi-idioma",
+landingWhy2Desc: "ES/EN/PT para atender mejor y vender sin fronteras.",
+landingWhy3Title: "Catálogo inteligente",
+landingWhy3Desc: "Productos, precios y detalles listos para comprar más rápido.",
+landingWhy4Title: "Pagos y métodos",
+landingWhy4Desc: "Efectivo, Pix, tarjetas, Stripe, PayPal, MercadoPago y USDT.",
+landingWhy5Title: "Diseño premium",
+landingWhy5Desc: "Se ve moderno, confiable y eleva la percepción de tu marca.",
+landingWhy6Title: "Listo para escalar",
+landingWhy6Desc: "Ideal para WhatsApp, integraciones y crecimiento sin fricción.",
+
+landingTestimonialsTitle: "Historias reales",
+landingTestimonialsSubtitle: "Menos mensajes repetidos. Más ventas. Mejor experiencia.",
+
+landingTesti1Name: "María G.",
+landingTesti1Role: "Cafetería • 2 sucursales",
+landingTesti1Text: "Antes respondíamos tarde y se iban. Con Aura el cliente ve el menú, pregunta y compra sin esperar. Se nota más profesional.",
+
+landingTesti2Name: "João S.",
+landingTesti2Role: "Pet shop",
+landingTesti2Text: "Redujo muchísimo las preguntas repetidas. El catálogo quedó hermoso y el negocio atiende 24/7. Vale cada centavo.",
+
+landingTesti3Name: "Sarah J.",
+landingTesti3Role: "Servicios de belleza",
+landingTesti3Text: "Los agendamientos son más fluidos. Aura responde dudas y confirma detalles rápido. Los clientes confían porque se ve premium.",
+
+landingPlansTitle: "Planes y precios",
+landingPlansSubtitle: "Comienza gratis y crece sin límites.",
+landingPlanFreeTitle: "Plan Gratuito",
+landingPlanFreeDesc: "Perfecto para comenzar",
+landingPlanFreeFeat1: "Hasta 2 productos",
+landingPlanFreeFeat2: "Solo pagos en efectivo",
+landingPlanFreeFeat3: "Acceso básico a la app",
+landingPlanFreeCta: "Empezar gratis",
+
+landingPlanProTitle: "Plan Ilimitado",
+landingPlanProBadge: "POPULAR",
+landingPlanProDesc: "Para crecer sin límites",
+landingPlanProFeat1: "Productos ilimitados",
+landingPlanProFeat2: "Acceso a toda la app",
+landingPlanProFeat3: "Pagos completos + integraciones",
+landingPlanProCta: "Actualizar a ilimitado",
+
+landingFinalCtaTitle: "Tu negocio, atendido 24/7",
+landingFinalCtaSubtitle: "Configura Aura hoy y empieza a convertir visitas en ventas.",
+landingFinalCtaPrimary: "Ver planes",
+landingFinalCtaSecondary: "Probar demo",
+landingSalesToday: "Ventas Hoy",
+
+landingMockHeader: "Chat en vivo • Aura AI",
+landingMockMsg1: "Hola 👋 ¿En qué puedo ayudarte hoy?",
+landingMockMsg2: "Quiero agendar una cita",
+landingMockMsg3: "Perfecto 😊 ¿Qué día te viene mejor?",
+landingMockFooter: "Respuesta automática en tiempo real",
+
+landingMockHeader: "Chat en vivo • Aura AI",
+landingMockA1: "Hola 👋 ¿Quieres ver el menú o agendar una cita?",
+landingMockU1: "Quiero ver el menú",
+landingMockA2: "Perfecto ✅ Estos son los más pedidos hoy:",
+landingMockItem1: "Café",
+landingMockItem2: "Té",
+landingMockItem3: "Postre",
+landingMockU2: "¿Aceptan pagos con USDT?",
+landingMockA3: "🟩 Sí, aceptamos USDT. ¿Deseas que te calcule el total?",
+landingMockFooter: "Respuesta automática en tiempo real",
+landingSalesToday: "Ventas Hoy",
+
+landingIndustriesTitle: "Ideal para tu industria",
+landingIndustriesSubtitle: "Aura se adapta a tu negocio y convierte conversaciones en ventas.",
+landingIndustry1Title: "Restaurantes y cafeterías",
+landingIndustry1Desc: "Menú, horarios, pedidos y preguntas frecuentes en segundos.",
+landingIndustry2Title: "Belleza y estética",
+landingIndustry2Desc: "Agenda citas, confirma disponibilidad y responde dudas 24/7.",
+landingIndustry3Title: "Tiendas y e-commerce",
+landingIndustry3Desc: "Catálogo inteligente, precios, pagos y seguimiento automático.",
+landingIndustry4Title: "Servicios profesionales",
+landingIndustry4Desc: "Cotizaciones rápidas, reservas y atención premium sin esfuerzo.",
+
+currentPlan: "Plan Actual",
+
     },
     en: {
       chat: 'Chat',
@@ -457,6 +1138,7 @@ O que você gostaria de consultar primeiro?`
       payStripe: 'Stripe',
       payMP: 'MercadoPago',
       payPaypal: 'PayPal',
+      payUSDT: "USDT (Crypto)",
       multiLanguageSupport: 'Multi-Language Support',
       selectLanguages: 'Select languages to activate',
       readyToDeploy: 'Ready to Deploy',
@@ -478,7 +1160,97 @@ O que você gostaria de consultar primeiro?`
       proTipText: 'Configure your business, test the chat, then export to your website',
       calendarTitle: '📅 Book Appointment',
       selectDate: 'Select a date:',
-      selectTime: 'Available times:'
+      selectTime: 'Available times:',
+      landingLogin: 'Log in',
+
+      landingHeroTitle: "Turn chats into sales with Aura",
+landingHeroSubtitle: "A virtual assistant for your business: instant replies, smart catalog, FAQs and booking 24/7. Premium experience, WhatsApp-ready and payments supported.",
+landingCtaPrimary: "Create my Aura",
+landingCtaSecondary: "View live demo",
+
+landingWhyTitle: "Why Aura?",
+landingWhySubtitle: "A premium experience that sells, supports and books effortlessly.",
+
+landingWhy1Title: "Replies in seconds",
+landingWhy1Desc: "Don’t lose customers: Aura answers instantly 24/7.",
+landingWhy2Title: "Multi-language",
+landingWhy2Desc: "ES/EN/PT to support better and sell globally.",
+landingWhy3Title: "Smart catalog",
+landingWhy3Desc: "Products, prices and details—built to convert faster.",
+landingWhy4Title: "Payments supported",
+landingWhy4Desc: "Cash, Pix, cards, Stripe, PayPal, MercadoPago and USDT.",
+landingWhy5Title: "Premium design",
+landingWhy5Desc: "Modern, trustworthy and brand-elevating.",
+landingWhy6Title: "Ready to scale",
+landingWhy6Desc: "Built for WhatsApp, integrations and growth.",
+
+landingTestimonialsTitle: "Real stories",
+landingTestimonialsSubtitle: "Fewer repetitive messages. More sales. Better experience.",
+
+landingTesti1Name: "María G.",
+landingTesti1Role: "Coffee shop • 2 locations",
+landingTesti1Text: "We used to reply late and lose people. With Aura, customers see the menu and buy faster. It feels truly professional.",
+landingTesti2Name: "João S.",
+landingTesti2Role: "Pet store",
+landingTesti2Text: "It cut repetitive questions a lot. The catalog looks amazing and support is 24/7. Worth it.",
+landingTesti3Name: "Sarah J.",
+landingTesti3Role: "Beauty services",
+landingTesti3Text: "Bookings are smoother now. Aura handles FAQs and confirms details quickly. Customers trust the premium look.",
+
+landingPlansTitle: "Plans & pricing",
+landingPlansSubtitle: "Start free and grow without limits.",
+landingPlanFreeTitle: "Free Plan",
+landingPlanFreeDesc: "Perfect to get started",
+landingPlanFreeFeat1: "Up to 2 products",
+landingPlanFreeFeat2: "Cash payments only",
+landingPlanFreeFeat3: "Basic app access",
+landingPlanFreeCta: "Start free",
+
+landingPlanProTitle: "Unlimited Plan",
+landingPlanProBadge: "POPULAR",
+landingPlanProDesc: "Built to scale",
+landingPlanProFeat1: "Unlimited products",
+landingPlanProFeat2: "Full app access",
+landingPlanProFeat3: "Full payments + integrations",
+landingPlanProCta: "Upgrade to unlimited",
+
+landingFinalCtaTitle: "Your business, answered 24/7",
+landingFinalCtaSubtitle: "Set up Aura today and turn visits into sales.",
+landingFinalCtaPrimary: "View plans",
+landingFinalCtaSecondary: "Try demo",
+landingSalesToday: "Sales Today",
+
+landingMockHeader: "Live chat • Aura AI",
+landingMockMsg1: "Hi 👋 How can I help you today?",
+landingMockMsg2: "I want to book an appointment",
+landingMockMsg3: "Perfect 😊 What day works best for you?",
+landingMockFooter: "Real-time automated response",
+
+landingMockHeader: "Live chat • Aura AI",
+landingMockA1: "Hi 👋 Would you like to see the menu or book an appointment?",
+landingMockU1: "Show me the menu",
+landingMockA2: "Great ✅ Here are today’s most requested:",
+landingMockItem1: "Coffee",
+landingMockItem2: "Tea",
+landingMockItem3: "Dessert",
+landingMockU2: "Do you accept USDT payments?",
+landingMockA3: "🟩 Yes, we accept USDT. Want me to calculate the total?",
+landingMockFooter: "Real-time automated response",
+landingSalesToday: "Sales Today",
+
+landingIndustriesTitle: "Perfect for your industry",
+landingIndustriesSubtitle: "Aura adapts to your business and turns conversations into sales.",
+landingIndustry1Title: "Restaurants & cafés",
+landingIndustry1Desc: "Menu, hours, orders and FAQs in seconds.",
+landingIndustry2Title: "Beauty & wellness",
+landingIndustry2Desc: "Book appointments, confirm availability and answer 24/7.",
+landingIndustry3Title: "Stores & e-commerce",
+landingIndustry3Desc: "Smart catalog, pricing, payments and automated follow-ups.",
+landingIndustry4Title: "Professional services",
+landingIndustry4Desc: "Fast quotes, bookings and premium support effortlessly.",
+
+currentPlan: "Current plan",
+
     },
     pt: {
       chat: 'Chat',
@@ -563,6 +1335,7 @@ O que você gostaria de consultar primeiro?`
       payStripe: 'Stripe',
       payMP: 'MercadoPago',
       payPaypal: 'PayPal',
+      payUSDT: "USDT (Cripto)",
       multiLanguageSupport: 'Suporte Multi-idioma',
       selectLanguages: 'Selecione os idiomas para ativar',
       readyToDeploy: 'Pronto para Implantar',
@@ -584,7 +1357,96 @@ O que você gostaria de consultar primeiro?`
       proTipText: 'Configure seu negócio, teste o chat e depois exporte para seu site',
       calendarTitle: '📅 Agendar Horário',
       selectDate: 'Selecione um dia:',
-      selectTime: 'Horários disponíveis:'
+      selectTime: 'Horários disponíveis:',
+      landingLogin: 'Entrar',
+      landingHeroTitle: "Transforme conversas em vendas com Aura",
+landingHeroSubtitle: "Assistente virtual para o seu negócio: responde na hora, mostra o catálogo, tira dúvidas e agenda 24/7. Experiência premium, pronta para WhatsApp e pagamentos.",
+landingCtaPrimary: "Criar minha Aura",
+landingCtaSecondary: "Ver demo ao vivo",
+
+landingWhyTitle: "Por que Aura?",
+landingWhySubtitle: "Uma experiência premium que vende, atende e agenda sem esforço.",
+
+landingWhy1Title: "Responde em segundos",
+landingWhy1Desc: "Não perca clientes: a Aura responde na hora 24/7.",
+landingWhy2Title: "Multi-idioma",
+landingWhy2Desc: "ES/EN/PT para atender melhor e vender sem fronteiras.",
+landingWhy3Title: "Catálogo inteligente",
+landingWhy3Desc: "Produtos, preços e detalhes prontos para converter.",
+landingWhy4Title: "Pagamentos suportados",
+landingWhy4Desc: "Dinheiro, Pix, cartões, Stripe, PayPal, MercadoPago e USDT.",
+landingWhy5Title: "Design premium",
+landingWhy5Desc: "Visual moderno, confiável e que valoriza sua marca.",
+landingWhy6Title: "Pronto para escalar",
+landingWhy6Desc: "Feito para WhatsApp, integrações e crescimento.",
+
+landingTestimonialsTitle: "Histórias reais",
+landingTestimonialsSubtitle: "Menos mensagens repetidas. Mais vendas. Melhor experiência.",
+
+landingTesti1Name: "María G.",
+landingTesti1Role: "Cafeteria • 2 unidades",
+landingTesti1Text: "Antes respondíamos tarde e perdíamos clientes. Com a Aura, a pessoa vê o menu e compra mais rápido. Fica bem profissional.",
+landingTesti2Name: "João S.",
+landingTesti2Role: "Pet shop",
+landingTesti2Text: "Diminuiu muito as perguntas repetidas. O catálogo ficou lindo e o atendimento é 24/7. Vale muito a pena.",
+landingTesti3Name: "Sarah J.",
+landingTesti3Role: "Serviços de beleza",
+landingTesti3Text: "Os agendamentos ficaram mais fáceis. A Aura responde dúvidas e confirma detalhes rápido. O visual premium dá confiança.",
+
+landingPlansTitle: "Planos e preços",
+landingPlansSubtitle: "Comece grátis e cresça sem limites.",
+landingPlanFreeTitle: "Plano Grátis",
+landingPlanFreeDesc: "Perfeito para começar",
+landingPlanFreeFeat1: "Até 2 produtos",
+landingPlanFreeFeat2: "Somente pagamentos em dinheiro",
+landingPlanFreeFeat3: "Acesso básico ao app",
+landingPlanFreeCta: "Começar grátis",
+
+landingPlanProTitle: "Plano Ilimitado",
+landingPlanProBadge: "POPULAR",
+landingPlanProDesc: "Para crescer sem limites",
+landingPlanProFeat1: "Produtos ilimitados",
+landingPlanProFeat2: "Acesso total ao app",
+landingPlanProFeat3: "Pagamentos completos + integrações",
+landingPlanProCta: "Atualizar para ilimitado",
+
+landingFinalCtaTitle: "Seu negócio atendido 24/7",
+landingFinalCtaSubtitle: "Configure a Aura hoje e transforme visitas em vendas.",
+landingFinalCtaPrimary: "Ver planos",
+landingFinalCtaSecondary: "Testar demo",
+landingSalesToday: "Vendas Hoje",
+
+landingMockHeader: "Chat ao vivo • Aura AI",
+landingMockMsg1: "Olá 👋 Como posso te ajudar hoje?",
+landingMockMsg2: "Quero agendar um horário",
+landingMockMsg3: "Perfeito 😊 Qual dia fica melhor pra você?",
+landingMockFooter: "Resposta automática em tempo real",
+
+landingMockHeader: "Chat ao vivo • Aura AI",
+landingMockA1: "Olá 👋 Quer ver o menu ou agendar um horário?",
+landingMockU1: "Quero ver o menu",
+landingMockA2: "Perfeito ✅ Estes são os mais pedidos hoje:",
+landingMockItem1: "Café",
+landingMockItem2: "Chá",
+landingMockItem3: "Sobremesa",
+landingMockU2: "Vocês aceitam pagamento em USDT?",
+landingMockA3: "🟩 Sim, aceitamos USDT. Quer que eu calcule o total?",
+landingMockFooter: "Resposta automática em tempo real",
+landingSalesToday: "Vendas Hoje",
+
+landingIndustriesTitle: "Ideal para o seu setor",
+landingIndustriesSubtitle: "A Aura se adapta ao seu negócio e transforma conversas em vendas.",
+landingIndustry1Title: "Restaurantes e cafeterias",
+landingIndustry1Desc: "Cardápio, horários, pedidos e dúvidas em segundos.",
+landingIndustry2Title: "Beleza e estética",
+landingIndustry2Desc: "Agenda horários, confirma disponibilidade e responde 24/7.",
+landingIndustry3Title: "Lojas e e-commerce",
+landingIndustry3Desc: "Catálogo inteligente, preços, pagamentos e acompanhamento automático.",
+landingIndustry4Title: "Serviços profissionais",
+landingIndustry4Desc: "Orçamentos rápidos, reservas e atendimento premium sem esforço.",
+
+currentPlan: "Plano atual",
+
     }
   };
 
@@ -620,7 +1482,7 @@ O que você gostaria de consultar primeiro?`
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await window.storage.get('ai-assistant-complete-data');
+        const data = await storage.get('ai-assistant-complete-data');
         if (data) {
           const parsed = JSON.parse(data.value);
           setBusinessInfo(parsed.businessInfo || businessInfo);
@@ -657,7 +1519,7 @@ O que você gostaria de consultar primeiro?`
         payment: paymentInfo,
         isConfigured
       };
-      await window.storage.set('ai-assistant-complete-data', JSON.stringify(allData));
+      await storage.set('ai-assistant-complete-data', JSON.stringify(allData));
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -717,6 +1579,17 @@ Gostaria de ver os preços ou prefere uma demo?`
   };
 
   const addProduct = () => {
+    // --- LÓGICA DE RESTRICCIÓN (NUEVO) ---
+    // Si el usuario NO es premium Y ya tiene 2 o más productos...
+    if (userPlan !== 'premium' && products.length >= 2) {
+      // Le mostramos una alerta (puedes cambiar esto por un modal bonito luego)
+      alert("🔒 Límite alcanzado en Plan Gratis.\n\nPor favor actualiza a Premium para agregar productos ilimitados.");
+      // Y detenemos la función aquí. No se agrega nada.
+      return; 
+    }
+    // -------------------------------------
+
+    // El resto sigue igual que antes...
     if (newProduct.name && newProduct.price) {
       setProducts([...products, {...newProduct}]);
       setNewProduct({ name: '', price: '', category: '', image: '' });
@@ -1105,7 +1978,44 @@ app.post('/whatsapp-webhook', async (req, res) => {
     copyToClipboard(code);
   };
 
-  return (
+  // =================================================================
+  //  PASO FINAL: PEGAR ESTO AQUÍ (JUSTO ANTES DEL "return (" )
+  // =================================================================
+  
+  // 1. Si la vista es 'landing', mostramos la Portada nueva
+  if (currentView === 'landing') {
+    return (
+      <LandingPage 
+        t={t}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
+        onStart={() => setCurrentView('pricing')} 
+        onLogin={() => setCurrentView('pricing')}
+        onDemo={() => {
+          loadExampleConfig(); // <--- Tu función original que carga Café Delicias
+          setCurrentView('app'); // <--- Entramos a la APP
+        }} 
+      />
+    );
+  }
+
+  // 2. Si la vista es 'pricing', mostramos los Precios
+  if (currentView === 'pricing') {
+    return (
+      <PricingSection 
+        t={t}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
+        onSelectPlan={handleLogin} 
+        onBack={() => setCurrentView('landing')} 
+      />
+    );
+  }
+
+  // 3. Si no es ninguno de los anteriores, el código sigue y muestra tu APP original
+  // =================================================================
+
+  return (  // <--- ESTA ES LA LÍNEA QUE YA TENÍAS. ¡NO LA BORRES!
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 relative overflow-hidden">
       {/* Animated Tech Background */}
       <div className="fixed inset-0 pointer-events-none">
@@ -1147,7 +2057,18 @@ app.post('/whatsapp-webhook', async (req, res) => {
                 >
                   {lang}
                 </button>
+                
               ))}
+              {/* --- BOTÓN DE LOGOUT (NUEVO) --- */}
+            <button
+              onClick={handleLogout}
+              className="ml-2 flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition text-xs font-bold"
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline">Salir</span>
+            </button>
+            {/* -------------------------------- */}
             </div>
 
             <button 
@@ -2019,15 +2940,24 @@ app.post('/whatsapp-webhook', async (req, res) => {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { key: 'pixEnabled', label: t.payPix, icon: '💠' },
-                { key: 'creditCardEnabled', label: t.payCredit, icon: '💳' },
-                { key: 'debitCardEnabled', label: t.payDebit, icon: '💳' },
-                { key: 'cashEnabled', label: t.payCash, icon: '💵' },
-                { key: 'stripeEnabled', label: t.payStripe, icon: 'S' },
-                { key: 'mercadoPagoEnabled', label: t.payMP, icon: 'M' },
-                { key: 'paypalEnabled', label: t.payPaypal, icon: 'P' }
-              ].map((payment) => (
+  {[
+    { key: 'pixEnabled', label: t.payPix, icon: '💠' },
+    { key: 'creditCardEnabled', label: t.payCredit, icon: '💳' },
+    { key: 'debitCardEnabled', label: t.payDebit, icon: '💳' },
+    { key: 'cashEnabled', label: t.payCash, icon: '💵' },
+
+    // ✅ Stripe (emoji)
+    { key: 'stripeEnabled', label: t.payStripe, icon: '🟣' },
+
+    // ✅ MercadoPago (emoji)
+    { key: 'mercadoPagoEnabled', label: t.payMP, icon: '🟦' },
+
+    // ✅ PayPal (emoji)
+    { key: 'paypalEnabled', label: t.payPaypal, icon: '🅿️' },
+
+    // ✅ Crypto USDT (nuevo)
+    { key: 'cryptoUsdtEnabled', label: t.payUSDT, icon: '🟩' },
+  ].map((payment) => (
                 <button
                   key={payment.key}
                   onClick={() => setPaymentInfo({...paymentInfo, [payment.key]: !paymentInfo[payment.key]})}
